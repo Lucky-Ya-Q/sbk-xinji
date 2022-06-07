@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.sbk.mapper.SbkOperLogMapper">
+    <select id="selectSbkOperLogList" resultType="com.ruoyi.sbk.domain.SbkOperLog">
+        select ol.*, u.nick_name
+        from sbk_oper_log ol
+        left join sys_user u on ol.user_id = u.user_id
+        left join sys_dept d on ol.dept_id = d.dept_id
+        <where>
+            <if test="cardXm != null  and cardXm != ''">
+                and card_xm like concat('%', #{cardXm}, '%')
+            </if>
+            <if test="cardSfzh != null  and cardSfzh != ''">
+                and card_sfzh = #{cardSfzh}
+            </if>
+            <if test="channelType != null">
+                and channel_type = #{channelType}
+            </if>
+            <if test="area != null  and area != ''">
+                and area like concat('%', #{area}, '%')
+            </if>
+            <if test="street != null  and street != ''">
+                and street like concat('%', #{street}, '%')
+            </if>
+            <if test="village != null  and village != ''">
+                and village like concat('%', #{village}, '%')
+            </if>
+            <if test="serviceType != null  and serviceType != ''">
+                and service_type like concat('%', #{serviceType}, '%')
+            </if>
+            ${params.dataScope}
+        </where>
+        order by ol.create_time desc
+    </select>
+
+    <select id="groupByServiceType" resultType="java.util.Map">
+        select service_type serviceType, count(service_type) count
+        from sbk_oper_log
+        where to_days(create_time) = to_days(now())
+        group by service_type
+        order by count desc
+    </select>
+
+    <select id="groupByStreet" resultType="java.util.Map">
+        select street street, count(street) count
+        from sbk_oper_log
+        where to_days(create_time) = to_days(now())
+          and street in (
+            select dept_name
+            from sys_dept
+            where parent_id = 100
+              and del_flag = 0)
+        group by street
+        order by count desc
+    </select>
+
+    <select id="groupByChannelType" resultType="java.util.Map">
+        select channel_type channelType, count(channel_type) count
+        from sbk_oper_log
+        group by channel_type
+        order by count desc
+    </select>
+
+    <select id="bjqdfbbfxxc" resultType="java.util.Map">
+        select count(case when channel_type = 1 then 1 end)  as geren,
+               count(case when channel_type != 1 then 1 end) as dating
+        from sbk_oper_log
+    </select>
+</mapper>

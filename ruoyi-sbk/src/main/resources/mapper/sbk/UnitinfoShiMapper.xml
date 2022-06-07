@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.sbk.mapper.UnitinfoShiMapper">
+    <select id="selectUnitinfoShiList" resultType="com.ruoyi.sbk.domain.UnitinfoShi">
+        select *
+        from unitinfo_shi
+        <where>
+            <if test="unitname != null  and unitname != ''">
+                and unitname like concat('%', #{unitname}, '%')
+            </if>
+            and flag = 1
+        </where>
+    </select>
+</mapper>

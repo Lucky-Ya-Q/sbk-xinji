@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.sbk.mapper.WxResidenceTypeMapper">
+    <select id="selectWxResidenceTypeList" resultType="com.ruoyi.sbk.domain.WxResidenceType">
+        select *
+        from wx_residence_type
+        <where>
+            <if test="residenceType != null  and residenceType != ''">
+                and residence_type like concat('%', #{residenceType}, '%')
+            </if>
+        </where>
+    </select>
+</mapper>

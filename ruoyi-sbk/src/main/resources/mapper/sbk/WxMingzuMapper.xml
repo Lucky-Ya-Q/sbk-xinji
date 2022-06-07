@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.sbk.mapper.WxMingzuMapper">
+    <select id="selectWxMingzuList" resultType="com.ruoyi.sbk.domain.WxMingzu">
+        select *
+        from wx_mingzu
+        <where>
+            <if test="nationName != null  and nationName != ''">
+                and nation_name like concat('%', #{nationName}, '%')
+            </if>
+        </where>
+    </select>
+</mapper>
