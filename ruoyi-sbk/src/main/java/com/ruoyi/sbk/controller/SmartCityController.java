@@ -40,9 +40,9 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("测试")
     @PostMapping("/test")
     public AjaxResult test(@RequestBody String body) {
-        SbkUser sbkUser = JSON.parseObject(AESUtils.decrypt(body, AESUtils.KEY), SbkUser.class);
-        System.out.println(sbkUser);
-        String encrypt = AESUtils.encrypt(JSON.toJSONString(sbkUser), AESUtils.KEY);
+        RyjcxxbgParam ryjcxxbgParam = JSON.parseObject(AESUtils.decrypt(body, AESUtils.KEY), RyjcxxbgParam.class);
+        System.out.println(ryjcxxbgParam);
+        String encrypt = AESUtils.encrypt(JSON.toJSONString(ryjcxxbgParam), AESUtils.KEY);
         return AjaxResult.success("操作成功", encrypt);
     }
 
