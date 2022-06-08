@@ -10,11 +10,9 @@ import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.sbk.common.SbkBaseController;
 import com.ruoyi.sbk.domain.WxArchives;
 import com.ruoyi.sbk.domain.WxInfomationImg;
-import com.ruoyi.sbk.dto.FwmmxgParam;
-import com.ruoyi.sbk.dto.Result;
-import com.ruoyi.sbk.dto.RyjcxxbgParam;
-import com.ruoyi.sbk.dto.XbkzgjyParam;
+import com.ruoyi.sbk.dto.*;
 import com.ruoyi.sbk.service.IWxArchivesService;
+import com.ruoyi.sbk.service.IWxInfomationImgService;
 import com.ruoyi.sbk.service.SbkService;
 import com.ruoyi.sbk.util.AESUtils;
 import com.ruoyi.sbk.util.SbkParamUtils;
@@ -44,6 +42,9 @@ public class SmartCityController extends SbkBaseController {
     private SbkService sbkService;
     @Autowired
     private IWxArchivesService wxArchivesService;
+
+    @Autowired
+    private IWxInfomationImgService wxInfomationImgService;
 
     /**
      * 测试
@@ -90,7 +91,8 @@ public class SmartCityController extends SbkBaseController {
         }
 
         WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
-                .eq(WxArchives::getCardNum, xbkzgjyParam.getSfzh()));
+                .eq(WxArchives::getCardNum, xbkzgjyParam.getSfzh())
+                .eq(WxArchives::getName, xbkzgjyParam.getXm()));
         if (wxArchives != null) {
             // 审核状态：0代表未审核 1代表审核通过 2代表审核未通过
             String examineStatus = wxArchives.getExamineStatus();
@@ -107,6 +109,43 @@ public class SmartCityController extends SbkBaseController {
             }
         }
         return AjaxResult.success("您可以新采集信息");
+    }
+
+    /**
+     * 重新采集数据回显
+     */
+    @Log(title = "智慧城市", businessType = BusinessType.OTHER)
+    @ApiOperation("重新采集数据回显")
+    @GetMapping("/getCollectInfo")
+    public AjaxResult getCollectInfo(@Validated XbkzgjyParam xbkzgjyParam) {
+        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
+                .eq(WxArchives::getCardNum, xbkzgjyParam.getSfzh())
+                .eq(WxArchives::getName, xbkzgjyParam.getXm()));
+        if (wxArchives == null) {
+            return AjaxResult.error("未查到采集信息");
+        }
+        WxInfomationImg wxInfomationImg = wxInfomationImgService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxInfomationImg>()
+                .eq(WxInfomationImg::getCardNum, xbkzgjyParam.getSfzh()));
+        wxArchives.setWxInfomationImg(wxInfomationImg);
+        return AjaxResult.success(wxArchives);
+    }
+
+    /**
+     * 审核信息查询
+     */
+    @Log(title = "智慧城市", businessType = BusinessType.OTHER)
+    @ApiOperation("审核信息查询")
+    @GetMapping("/examineInfo")
+    public AjaxResult examineInfo(@Validated ExamineInfoParam examineInfoParam) {
+        String type = examineInfoParam.getType();
+        if (type.equals("shenling")) {
+
+        } else if (type.equals("buhuanka")) {
+
+        } else {
+            return AjaxResult.error("审核类型错误");
+        }
+        return AjaxResult.success();
     }
 
     /**
