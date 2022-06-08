@@ -36,6 +36,7 @@ public class SmartCityController extends SbkBaseController {
     /**
      * 测试
      */
+    @Log(title = "智慧城市", businessType = BusinessType.OTHER)
     @ApiOperation("测试")
     @PostMapping("/test")
     public AjaxResult test(@RequestBody String body) {
