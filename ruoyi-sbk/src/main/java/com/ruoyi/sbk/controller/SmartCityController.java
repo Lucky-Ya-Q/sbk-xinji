@@ -2,14 +2,19 @@ package com.ruoyi.sbk.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SbkUser;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.sbk.common.SbkBaseController;
+import com.ruoyi.sbk.domain.WxArchives;
+import com.ruoyi.sbk.domain.WxInfomationImg;
 import com.ruoyi.sbk.dto.FwmmxgParam;
 import com.ruoyi.sbk.dto.Result;
 import com.ruoyi.sbk.dto.RyjcxxbgParam;
+import com.ruoyi.sbk.dto.XbkzgjyParam;
+import com.ruoyi.sbk.service.IWxArchivesService;
 import com.ruoyi.sbk.service.SbkService;
 import com.ruoyi.sbk.util.AESUtils;
 import com.ruoyi.sbk.util.SbkParamUtils;
@@ -22,7 +27,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -31,7 +39,11 @@ import java.util.Map;
 @RequestMapping("/smart/city")
 public class SmartCityController extends SbkBaseController {
     @Autowired
+    private HttpServletRequest request;
+    @Autowired
     private SbkService sbkService;
+    @Autowired
+    private IWxArchivesService wxArchivesService;
 
     /**
      * 测试
@@ -45,6 +57,56 @@ public class SmartCityController extends SbkBaseController {
         log.info("解密后的数据：{}", jsonString);
         String encrypt = AESUtils.encrypt(jsonString, AESUtils.KEY);
         return AjaxResult.success("操作成功", encrypt);
+    }
+
+    /**
+     * 新办卡资格校验
+     */
+    @Log(title = "智慧城市", businessType = BusinessType.OTHER)
+    @ApiOperation("新办卡资格校验")
+    @GetMapping("/xbkzgjy")
+    public AjaxResult xbkzgjy(@Validated XbkzgjyParam xbkzgjyParam) throws IOException {
+        List<String> whiteList = new ArrayList<>();
+        whiteList.add("130125200002094513"); // 刘元博
+        if (!whiteList.contains(xbkzgjyParam.getSfzh())) {
+            // 办卡资格校验
+            String keyInfo = xbkzgjyParam.getSfzh() + "|" + xbkzgjyParam.getXm() + "|1";
+            Result result = sbkService.getResult("0811011", keyInfo);
+            if (!"200".equals(result.getStatusCode())) {
+                return AjaxResult.error(result.getMessage());
+            }
+            Map<String, String> data = (Map<String, String>) result.getData();
+            String bkzgjy = ParamUtils.decrypted(SbkParamUtils.PRIVATEKEY, data.get("ReturnResult"));
+            String[] bkzgjyArr = bkzgjy.split("\\|");
+            if ("0".equals(bkzgjyArr[0])) {
+                return AjaxResult.error("您已有社保卡采集信息");
+            }
+        }
+
+        String code = request.getParameter("code");
+        String source = "";
+        if ("f54791a523474e12b7c183f17c3cbcc2".equals(code)) {
+            source = "shenpiju";
+        }
+
+        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
+                .eq(WxArchives::getCardNum, xbkzgjyParam.getSfzh()));
+        if (wxArchives != null) {
+            // 审核状态：0代表未审核 1代表审核通过 2代表审核未通过
+            String examineStatus = wxArchives.getExamineStatus();
+            if ("0".equals(examineStatus)) {
+                return AjaxResult.error("采集信息审核中");
+            } else if ("1".equals(examineStatus)) {
+                return AjaxResult.error("采集信息审核已通过");
+            } else if ("2".equals(examineStatus)) {
+                if (source.equals(wxArchives.getSource())) {
+                    return new AjaxResult(201, "采集信息审核未通过");
+                } else {
+                    return AjaxResult.error("请继续在首次申领渠道修改信息");
+                }
+            }
+        }
+        return AjaxResult.success("您可以新采集信息");
     }
 
     /**
