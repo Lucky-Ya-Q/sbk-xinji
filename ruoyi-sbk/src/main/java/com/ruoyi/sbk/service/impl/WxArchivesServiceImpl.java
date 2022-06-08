@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * 基本信息Service业务层处理
  *
@@ -27,6 +29,18 @@ public class WxArchivesServiceImpl extends ServiceImpl<WxArchivesMapper, WxArchi
     private WxArchivesMapper wxArchivesMapper;
     @Autowired
     private WxInfomationImgMapper wxInfomationImgMapper;
+
+    @Override
+    @DataSource(value = DataSourceType.SLAVE)
+    public List<WxArchives> selectListByLambdaQueryWrapper(LambdaQueryWrapper<WxArchives> lambdaQueryWrapper) {
+        return wxArchivesMapper.selectList(lambdaQueryWrapper);
+    }
+
+    @Override
+    @DataSource(value = DataSourceType.SLAVE)
+    public WxArchives selectOneByLambdaQueryWrapper(LambdaQueryWrapper<WxArchives> lambdaQueryWrapper) {
+        return wxArchivesMapper.selectOne(lambdaQueryWrapper.last("limit 1"));
+    }
 
     @Override
     @DataSource(value = DataSourceType.SLAVE)

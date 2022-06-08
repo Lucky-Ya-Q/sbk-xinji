@@ -10,6 +10,8 @@ import com.ruoyi.sbk.service.IWxInfomationImgService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * 图片信息Service业务层处理
  *
@@ -20,6 +22,18 @@ import org.springframework.stereotype.Service;
 public class WxInfomationImgServiceImpl extends ServiceImpl<WxInfomationImgMapper, WxInfomationImg> implements IWxInfomationImgService {
     @Autowired
     private WxInfomationImgMapper wxInfomationImgMapper;
+
+    @Override
+    @DataSource(value = DataSourceType.SLAVE)
+    public List<WxInfomationImg> selectListByLambdaQueryWrapper(LambdaQueryWrapper<WxInfomationImg> lambdaQueryWrapper) {
+        return wxInfomationImgMapper.selectList(lambdaQueryWrapper);
+    }
+
+    @Override
+    @DataSource(value = DataSourceType.SLAVE)
+    public WxInfomationImg selectOneByLambdaQueryWrapper(LambdaQueryWrapper<WxInfomationImg> lambdaQueryWrapper) {
+        return wxInfomationImgMapper.selectOne(lambdaQueryWrapper.last("limit 1"));
+    }
 
     @Override
     @DataSource(value = DataSourceType.SLAVE)
