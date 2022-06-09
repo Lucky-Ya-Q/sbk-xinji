@@ -12,10 +12,7 @@ import com.ruoyi.sbk.domain.WxArchives;
 import com.ruoyi.sbk.domain.WxBukaInfo;
 import com.ruoyi.sbk.domain.WxInfomationImg;
 import com.ruoyi.sbk.dto.*;
-import com.ruoyi.sbk.service.IWxArchivesService;
-import com.ruoyi.sbk.service.IWxBukaInfoService;
-import com.ruoyi.sbk.service.IWxInfomationImgService;
-import com.ruoyi.sbk.service.SbkService;
+import com.ruoyi.sbk.service.*;
 import com.ruoyi.sbk.util.AESUtils;
 import com.ruoyi.sbk.util.SbkParamUtils;
 import com.tecsun.sm.utils.ParamUtils;
@@ -49,6 +46,8 @@ public class SmartCityController extends SbkBaseController {
     private IWxBukaInfoService wxBukaInfoService;
     @Autowired
     private IWxInfomationImgService wxInfomationImgService;
+    @Autowired
+    private SmartCityService smartCityService;
 
     /**
      * 测试
@@ -132,6 +131,16 @@ public class SmartCityController extends SbkBaseController {
                 .eq(WxInfomationImg::getCardNum, xbkzgjyParam.getSfzh()));
         wxArchives.setWxInfomationImg(wxInfomationImg);
         return AjaxResult.success(wxArchives);
+    }
+
+    /**
+     * 邮寄物流信息
+     */
+    @Log(title = "智慧城市", businessType = BusinessType.OTHER)
+    @ApiOperation("邮寄物流信息")
+    @GetMapping("/mailInfo")
+    public AjaxResult mailInfo(String wldh) {
+        return AjaxResult.success(smartCityService.selectMailInfoByWldh(wldh));
     }
 
     /**
