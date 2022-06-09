@@ -9,9 +9,11 @@ import com.ruoyi.common.core.domain.entity.SbkUser;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.sbk.common.SbkBaseController;
 import com.ruoyi.sbk.domain.WxArchives;
+import com.ruoyi.sbk.domain.WxBukaInfo;
 import com.ruoyi.sbk.domain.WxInfomationImg;
 import com.ruoyi.sbk.dto.*;
 import com.ruoyi.sbk.service.IWxArchivesService;
+import com.ruoyi.sbk.service.IWxBukaInfoService;
 import com.ruoyi.sbk.service.IWxInfomationImgService;
 import com.ruoyi.sbk.service.SbkService;
 import com.ruoyi.sbk.util.AESUtils;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,7 +45,8 @@ public class SmartCityController extends SbkBaseController {
     private SbkService sbkService;
     @Autowired
     private IWxArchivesService wxArchivesService;
-
+    @Autowired
+    private IWxBukaInfoService wxBukaInfoService;
     @Autowired
     private IWxInfomationImgService wxInfomationImgService;
 
@@ -137,15 +141,36 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("审核信息查询")
     @GetMapping("/examineInfo")
     public AjaxResult examineInfo(@Validated ExamineInfoParam examineInfoParam) {
+        Map<String, Object> result = new HashMap<>();
+
         String type = examineInfoParam.getType();
         if (type.equals("shenling")) {
-
+            WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
+                    .eq(WxArchives::getCardNum, examineInfoParam.getSfzh())
+                    .eq(WxArchives::getName, examineInfoParam.getXm()));
+            if (wxArchives == null) {
+                return AjaxResult.error("未查到申领数据");
+            }
+            Integer examineStatus = Integer.valueOf(wxArchives.getExamineStatus());
+            result.put("examineStatus", examineStatus); // 审核时间
+            result.put("examineTime", wxArchives.getExamineTime()); // 审核时间
+            result.put("rejectReason", wxArchives.getReason()); // 驳回原因
         } else if (type.equals("buhuanka")) {
-
+            WxBukaInfo wxBukaInfo = wxBukaInfoService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxBukaInfo>()
+                    .eq(WxBukaInfo::getIdcardno, examineInfoParam.getSfzh())
+                    .eq(WxBukaInfo::getKaName, examineInfoParam.getXm()));
+            if (wxBukaInfo == null) {
+                return AjaxResult.error("未查到补换卡数据");
+            }
+            Integer examineStatus = wxBukaInfo.getExamineStatus();
+            result.put("examineStatus", examineStatus); // 审核时间
+            result.put("examineTime", wxBukaInfo.getExamineTime()); // 审核时间
+            result.put("rejectReason", wxBukaInfo.getRejectReason()); // 驳回原因
         } else {
             return AjaxResult.error("审核类型错误");
         }
-        return AjaxResult.success();
+
+        return AjaxResult.success(result);
     }
 
     /**

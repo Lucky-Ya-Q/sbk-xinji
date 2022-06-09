@@ -4,18 +4,16 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ruoyi.common.annotation.DataSource;
 import com.ruoyi.common.enums.DataSourceType;
-import com.ruoyi.sbk.domain.WxBukaBank;
 import com.ruoyi.sbk.domain.WxBukaInfo;
-import com.ruoyi.sbk.mapper.WxBukaBankMapper;
 import com.ruoyi.sbk.mapper.WxBukaInfoMapper;
-import com.ruoyi.sbk.service.WxBukaInfoService;
+import com.ruoyi.sbk.service.IWxBukaInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class WxBukaInfoServiceImpl extends ServiceImpl<WxBukaInfoMapper, WxBukaInfo> implements WxBukaInfoService {
+public class WxBukaInfoServiceImpl extends ServiceImpl<WxBukaInfoMapper, WxBukaInfo> implements IWxBukaInfoService {
     @Autowired
     private WxBukaInfoMapper wxBukaInfoMapper;
 
