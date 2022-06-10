@@ -12,4 +12,9 @@
             </if>
         </where>
     </select>
+
+    <select id="listAll" resultType="com.ruoyi.sbk.domain.WxRelation">
+        select *
+        from wx_relation
+    </select>
 </mapper>

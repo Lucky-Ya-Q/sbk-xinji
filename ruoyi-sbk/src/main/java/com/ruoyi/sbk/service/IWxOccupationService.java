@@ -19,4 +19,6 @@ public interface IWxOccupationService extends IService<WxOccupation> {
      * @return 职业信息集合
      */
     List<WxOccupation> selectWxOccupationList(WxOccupation wxOccupation);
+
+    List<WxOccupation> listAll();
 }

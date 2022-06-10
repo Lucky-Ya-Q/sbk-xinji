@@ -19,4 +19,6 @@ public interface IWxMingzuService extends IService<WxMingzu> {
      * @return 民族信息集合
      */
     List<WxMingzu> selectWxMingzuList(WxMingzu wxMingzu);
+
+    List<WxMingzu> listAll();
 }

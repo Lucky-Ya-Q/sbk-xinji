@@ -23,18 +23,6 @@ public class UnitinfoShiServiceImpl extends ServiceImpl<UnitinfoShiMapper, Uniti
     @Autowired
     private UnitinfoShiMapper unitinfoShiMapper;
 
-    @Override
-    @DataSource(value = DataSourceType.SLAVE)
-    public List<UnitinfoShi> selectListByLambdaQueryWrapper(LambdaQueryWrapper<UnitinfoShi> lambdaQueryWrapper) {
-        return unitinfoShiMapper.selectList(lambdaQueryWrapper);
-    }
-
-    @Override
-    @DataSource(value = DataSourceType.SLAVE)
-    public UnitinfoShi selectOneByLambdaQueryWrapper(LambdaQueryWrapper<UnitinfoShi> lambdaQueryWrapper) {
-        return unitinfoShiMapper.selectOne(lambdaQueryWrapper.last("limit 1"));
-    }
-
     /**
      * 查询单位信息列表
      *

@@ -419,8 +419,9 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("查询单位信息列表")
     @PostMapping("/unitinfoShi")
     public AjaxResult unitinfoShi(@RequestBody @Validated UnitinfoShiParam unitinfoShiParam) {
-        List<UnitinfoShi> list = unitinfoShiService.list(new LambdaQueryWrapper<UnitinfoShi>()
-                .like(StrUtil.isNotBlank(unitinfoShiParam.getUnitname()), UnitinfoShi::getUnitname, unitinfoShiParam.getUnitname()));
+        UnitinfoShi unitinfoShi = new UnitinfoShi();
+        unitinfoShi.setUnitname(unitinfoShiParam.getUnitname());
+        List<UnitinfoShi> list = unitinfoShiService.selectUnitinfoShiList(unitinfoShi);
         return AjaxResult.success(list);
     }
 
@@ -431,7 +432,7 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("查询银行信息列表")
     @PostMapping("/wxBukaBank")
     public AjaxResult wxBukaBank(@RequestBody @Validated CodeParam codeParam) {
-        return AjaxResult.success(wxBukaBankService.list());
+        return AjaxResult.success(wxBukaBankService.listAll());
     }
 
     /**
@@ -441,7 +442,7 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("查询代办人关系列表")
     @PostMapping("/wxRelation")
     public AjaxResult wxRelation(@RequestBody @Validated CodeParam codeParam) {
-        return AjaxResult.success(wxRelationService.list());
+        return AjaxResult.success(wxRelationService.listAll());
     }
 
     /**
@@ -451,7 +452,7 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("查询户口性质列表")
     @PostMapping("/wxResidenceType")
     public AjaxResult wxResidenceType(@RequestBody @Validated CodeParam codeParam) {
-        return AjaxResult.success(wxResidenceTypeService.list());
+        return AjaxResult.success(wxResidenceTypeService.listAll());
     }
 
     /**
@@ -461,7 +462,7 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("查询职业信息列表")
     @PostMapping("/wxOccupation")
     public AjaxResult wxOccupation(@RequestBody @Validated CodeParam codeParam) {
-        return AjaxResult.success(wxOccupationService.list());
+        return AjaxResult.success(wxOccupationService.listAll());
     }
 
     /**
@@ -471,6 +472,6 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("查询民族信息列表")
     @PostMapping("/wxMingzu")
     public AjaxResult wxMingzu(@RequestBody @Validated CodeParam codeParam) {
-        return AjaxResult.success(wxMingzuService.list());
+        return AjaxResult.success(wxMingzuService.listAll());
     }
 }

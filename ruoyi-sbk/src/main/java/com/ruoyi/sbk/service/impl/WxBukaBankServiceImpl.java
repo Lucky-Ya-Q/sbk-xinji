@@ -33,4 +33,10 @@ public class WxBukaBankServiceImpl extends ServiceImpl<WxBukaBankMapper, WxBukaB
     public List<WxBukaBank> selectWxBukaBankList(WxBukaBank wxBukaBank) {
         return wxBukaBankMapper.selectWxBukaBankList(wxBukaBank);
     }
+
+    @Override
+    @DataSource(value = DataSourceType.SLAVE)
+    public List<WxBukaBank> listAll() {
+        return wxBukaBankMapper.listAll();
+    }
 }

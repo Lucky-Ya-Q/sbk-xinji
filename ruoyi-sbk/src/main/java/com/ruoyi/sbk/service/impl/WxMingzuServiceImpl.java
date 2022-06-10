@@ -33,4 +33,10 @@ public class WxMingzuServiceImpl extends ServiceImpl<WxMingzuMapper, WxMingzu> i
     public List<WxMingzu> selectWxMingzuList(WxMingzu wxMingzu) {
         return wxMingzuMapper.selectWxMingzuList(wxMingzu);
     }
+
+    @Override
+    @DataSource(value = DataSourceType.SLAVE)
+    public List<WxMingzu> listAll() {
+        return wxMingzuMapper.listAll();
+    }
 }

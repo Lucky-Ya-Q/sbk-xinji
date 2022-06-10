@@ -14,10 +14,6 @@ import java.util.List;
  * @date 2022-03-17
  */
 public interface IUnitinfoShiService extends IService<UnitinfoShi> {
-    List<UnitinfoShi> selectListByLambdaQueryWrapper(LambdaQueryWrapper<UnitinfoShi> lambdaQueryWrapper);
-
-    UnitinfoShi selectOneByLambdaQueryWrapper(LambdaQueryWrapper<UnitinfoShi> lambdaQueryWrapper);
-
     /**
      * 查询单位信息列表
      *

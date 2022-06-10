@@ -19,4 +19,6 @@ public interface IWxBukaBankService extends IService<WxBukaBank> {
      * @return 银行信息集合
      */
     List<WxBukaBank> selectWxBukaBankList(WxBukaBank wxBukaBank);
+
+    List<WxBukaBank> listAll();
 }

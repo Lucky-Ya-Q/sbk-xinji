@@ -15,4 +15,12 @@
             order by order_id
         </where>
     </select>
+
+    <select id="listAll" resultType="com.ruoyi.sbk.domain.WxBukaBank">
+        select *
+        from wx_buka_bank
+        where flag = 1
+          and status = 2
+        order by order_id
+    </select>
 </mapper>

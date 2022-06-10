@@ -19,4 +19,6 @@ public interface WxResidenceTypeMapper extends BaseMapper<WxResidenceType> {
      * @return 户口性质集合
      */
     List<WxResidenceType> selectWxResidenceTypeList(WxResidenceType wxResidenceType);
+
+    List<WxResidenceType> listAll();
 }

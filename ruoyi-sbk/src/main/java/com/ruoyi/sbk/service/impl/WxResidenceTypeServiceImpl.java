@@ -33,4 +33,10 @@ public class WxResidenceTypeServiceImpl extends ServiceImpl<WxResidenceTypeMappe
     public List<WxResidenceType> selectWxResidenceTypeList(WxResidenceType wxResidenceType) {
         return wxResidenceTypeMapper.selectWxResidenceTypeList(wxResidenceType);
     }
+
+    @Override
+    @DataSource(value = DataSourceType.SLAVE)
+    public List<WxResidenceType> listAll() {
+        return wxResidenceTypeMapper.listAll();
+    }
 }

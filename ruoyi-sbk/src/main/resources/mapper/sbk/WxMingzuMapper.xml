@@ -12,4 +12,9 @@
             </if>
         </where>
     </select>
+
+    <select id="listAll" resultType="com.ruoyi.sbk.domain.WxMingzu">
+        select *
+        from wx_mingzu
+    </select>
 </mapper>

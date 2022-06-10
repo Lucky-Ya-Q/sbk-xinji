@@ -33,4 +33,10 @@ public class WxOccupationServiceImpl extends ServiceImpl<WxOccupationMapper, WxO
     public List<WxOccupation> selectWxOccupationList(WxOccupation wxOccupation) {
         return wxOccupationMapper.selectWxOccupationList(wxOccupation);
     }
+
+    @Override
+    @DataSource(value = DataSourceType.SLAVE)
+    public List<WxOccupation> listAll() {
+        return wxOccupationMapper.listAll();
+    }
 }

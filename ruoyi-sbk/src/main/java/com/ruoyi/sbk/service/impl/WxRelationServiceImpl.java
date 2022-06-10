@@ -33,4 +33,10 @@ public class WxRelationServiceImpl extends ServiceImpl<WxRelationMapper, WxRelat
     public List<WxRelation> selectWxRelationList(WxRelation wxRelation) {
         return wxRelationMapper.selectWxRelationList(wxRelation);
     }
+
+    @Override
+    @DataSource(value = DataSourceType.SLAVE)
+    public List<WxRelation> listAll() {
+        return wxRelationMapper.listAll();
+    }
 }

@@ -19,4 +19,6 @@ public interface WxBukaBankMapper extends BaseMapper<WxBukaBank> {
      * @return 银行信息集合
      */
     List<WxBukaBank> selectWxBukaBankList(WxBukaBank wxBukaBank);
+
+    List<WxBukaBank> listAll();
 }

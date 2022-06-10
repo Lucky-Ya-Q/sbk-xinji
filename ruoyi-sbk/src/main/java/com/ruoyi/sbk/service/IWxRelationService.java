@@ -19,4 +19,6 @@ public interface IWxRelationService extends IService<WxRelation> {
      * @return 代办人关系集合
      */
     List<WxRelation> selectWxRelationList(WxRelation wxRelation);
+
+    List<WxRelation> listAll();
 }
