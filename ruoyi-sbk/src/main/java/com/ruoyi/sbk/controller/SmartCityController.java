@@ -60,8 +60,8 @@ public class SmartCityController extends SbkBaseController {
     @Log(title = "智慧城市", businessType = BusinessType.OTHER)
     @ApiOperation("测试")
     @PostMapping("/test")
-    public AjaxResult test(@RequestBody String body) {
-        SbkUser sbkUser = JSON.parseObject(AESUtils.decrypt(body, AESUtils.KEY), SbkUser.class);
+    public AjaxResult test(@RequestBody @Validated EncryptParam encryptParam) {
+        SbkUser sbkUser = JSON.parseObject(AESUtils.decrypt(encryptParam.getBody(), AESUtils.KEY), SbkUser.class);
         String jsonString = JSON.toJSONString(sbkUser);
         log.info("解密后的数据：{}", jsonString);
         String encrypt = AESUtils.encrypt(jsonString, AESUtils.KEY);
@@ -300,8 +300,8 @@ public class SmartCityController extends SbkBaseController {
     @Log(title = "智慧城市", businessType = BusinessType.RYJCXXBG)
     @ApiOperation("人员基础信息变更")
     @PostMapping("/ryjcxxbg")
-    public AjaxResult ryjcxxbg(@RequestBody String body) {
-        RyjcxxbgParam ryjcxxbgParam = JSON.parseObject(AESUtils.decrypt(body, AESUtils.KEY), RyjcxxbgParam.class);
+    public AjaxResult ryjcxxbg(@RequestBody @Validated EncryptParam encryptParam) {
+        RyjcxxbgParam ryjcxxbgParam = JSON.parseObject(AESUtils.decrypt(encryptParam.getBody(), AESUtils.KEY), RyjcxxbgParam.class);
         // 人员基础信息变更
         String keyInfo = ryjcxxbgParam.getAac002() + "|" + ryjcxxbgParam.getAac003() + "|" + ryjcxxbgParam.getJzdz() + "|" + ryjcxxbgParam.getYddh() + "|" + ryjcxxbgParam.getQsrq() + "|" + ryjcxxbgParam.getZzrq() + "|" + ryjcxxbgParam.getZy();
         Result result = sbkService.getResult("0821014", keyInfo);
@@ -313,8 +313,8 @@ public class SmartCityController extends SbkBaseController {
      */
     @ApiOperation("基本信息查询")
     @PostMapping("/jbxxcx")
-    public AjaxResult jbxxcx(@RequestBody String body) throws IOException {
-        SbkUser sbkUser = JSON.parseObject(AESUtils.decrypt(body, AESUtils.KEY), SbkUser.class);
+    public AjaxResult jbxxcx(@RequestBody @Validated EncryptParam encryptParam) throws IOException {
+        SbkUser sbkUser = JSON.parseObject(AESUtils.decrypt(encryptParam.getBody(), AESUtils.KEY), SbkUser.class);
         // 智慧城市基本信息查询
         Result result = sbkService.getResult("0811014", sbkUser.getAac002() + "||");
         if (!"200".equals(result.getStatusCode())) {
@@ -332,8 +332,8 @@ public class SmartCityController extends SbkBaseController {
     @Log(title = "智慧城市", businessType = BusinessType.JG)
     @ApiOperation("解挂")
     @PostMapping("/jg")
-    public AjaxResult jg(@RequestBody String body) {
-        SbkUser sbkUser = JSON.parseObject(AESUtils.decrypt(body, AESUtils.KEY), SbkUser.class);
+    public AjaxResult jg(@RequestBody @Validated EncryptParam encryptParam) {
+        SbkUser sbkUser = JSON.parseObject(AESUtils.decrypt(encryptParam.getBody(), AESUtils.KEY), SbkUser.class);
         // 解挂
         String keyInfo = sbkUser.getAac002() + "|" + sbkUser.getAac003() + "|" + sbkUser.getAaz500();
         Result result = sbkService.getResult("0821015", keyInfo);
@@ -346,8 +346,8 @@ public class SmartCityController extends SbkBaseController {
     @Log(title = "智慧城市", businessType = BusinessType.OTHER)
     @ApiOperation("注销")
     @PostMapping("/zx")
-    public AjaxResult zx(@RequestBody String body) {
-        SbkUser sbkUser = JSON.parseObject(AESUtils.decrypt(body, AESUtils.KEY), SbkUser.class);
+    public AjaxResult zx(@RequestBody @Validated EncryptParam encryptParam) {
+        SbkUser sbkUser = JSON.parseObject(AESUtils.decrypt(encryptParam.getBody(), AESUtils.KEY), SbkUser.class);
         // 注销
         String keyInfo = sbkUser.getAac002() + "|" + sbkUser.getAac003() + "|" + sbkUser.getAaz500();
         Result result = sbkService.getResult("0821018", keyInfo);
@@ -360,8 +360,8 @@ public class SmartCityController extends SbkBaseController {
     @Log(title = "智慧城市", businessType = BusinessType.ZSGS)
     @ApiOperation("正式挂失")
     @PostMapping("/zsgs")
-    public AjaxResult zsgs(@RequestBody String body) {
-        SbkUser sbkUser = JSON.parseObject(AESUtils.decrypt(body, AESUtils.KEY), SbkUser.class);
+    public AjaxResult zsgs(@RequestBody @Validated EncryptParam encryptParam) {
+        SbkUser sbkUser = JSON.parseObject(AESUtils.decrypt(encryptParam.getBody(), AESUtils.KEY), SbkUser.class);
         // 正式挂失
         String keyInfo = sbkUser.getAac002() + "|" + sbkUser.getAac003() + "|" + sbkUser.getAaz500();
         Result result = sbkService.getResult("0821017", keyInfo);
@@ -374,8 +374,8 @@ public class SmartCityController extends SbkBaseController {
     @Log(title = "智慧城市", businessType = BusinessType.FWMMCZ)
     @ApiOperation("服务密码重置")
     @PostMapping("/fwmmcz")
-    public AjaxResult fwmmcz(@RequestBody String body) {
-        SbkUser sbkUser = JSON.parseObject(AESUtils.decrypt(body, AESUtils.KEY), SbkUser.class);
+    public AjaxResult fwmmcz(@RequestBody @Validated EncryptParam encryptParam) {
+        SbkUser sbkUser = JSON.parseObject(AESUtils.decrypt(encryptParam.getBody(), AESUtils.KEY), SbkUser.class);
         // 服务密码重置
         String keyInfo = sbkUser.getAac002() + "|" + sbkUser.getAac003() + "|" + sbkUser.getAaz500() + "|123456|";
         Result result = sbkService.getResult("0821019", keyInfo);
@@ -388,8 +388,8 @@ public class SmartCityController extends SbkBaseController {
     @Log(title = "智慧城市", businessType = BusinessType.FWMMXG)
     @ApiOperation("服务密码修改")
     @PostMapping("/fwmmxg")
-    public AjaxResult fwmmxg(@RequestBody String body) {
-        FwmmxgParam fwmmxgParam = JSON.parseObject(AESUtils.decrypt(body, AESUtils.KEY), FwmmxgParam.class);
+    public AjaxResult fwmmxg(@RequestBody @Validated EncryptParam encryptParam) {
+        FwmmxgParam fwmmxgParam = JSON.parseObject(AESUtils.decrypt(encryptParam.getBody(), AESUtils.KEY), FwmmxgParam.class);
         // 服务密码修改
         String keyInfo = fwmmxgParam.getAac002() + "|" + fwmmxgParam.getAac003() + "|" + fwmmxgParam.getAaz500() + "|" + fwmmxgParam.getOldPassword() + "|" + fwmmxgParam.getNewPassword();
         Result result = sbkService.getResult("0821020", keyInfo);

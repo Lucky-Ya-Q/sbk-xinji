@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.ruoyi.common.exception.ServiceException;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -101,7 +102,8 @@ public class LogAspect
         {
             operLog.setOperName(loginUser.getUsername());
         } else {
-            String code = ServletUtils.getRequest().getParameter("code");
+            JSONObject jsonObject = JSON.parseObject(operLog.getOperParam());
+            String code = jsonObject.getString("code");
             if (StrUtil.isEmpty(code)){
                 // 保存数据库
                 operLog.setStatus(BusinessStatus.FAIL.ordinal());
