@@ -17,10 +17,7 @@ import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.framework.manager.AsyncManager;
 import com.ruoyi.framework.manager.factory.AsyncFactory;
 import com.ruoyi.sbk.common.SbkBaseController;
-import com.ruoyi.sbk.domain.WxArchives;
-import com.ruoyi.sbk.domain.WxBukaInfo;
-import com.ruoyi.sbk.domain.WxDistrict2;
-import com.ruoyi.sbk.domain.WxInfomationImg;
+import com.ruoyi.sbk.domain.*;
 import com.ruoyi.sbk.dto.*;
 import com.ruoyi.sbk.service.*;
 import com.ruoyi.sbk.util.AESUtils;
@@ -57,11 +54,23 @@ public class SmartCityController extends SbkBaseController {
     private SmartCityService smartCityService;
     @Autowired
     private IWxDistrict2Service wxDistrict2Service;
+    @Autowired
+    private IUnitinfoShiService unitinfoShiService;
+    @Autowired
+    private IWxBukaBankService wxBukaBankService;
+    @Autowired
+    private IWxRelationService wxRelationService;
+    @Autowired
+    private IWxResidenceTypeService wxResidenceTypeService;
+    @Autowired
+    private IWxOccupationService wxOccupationService;
+    @Autowired
+    private IWxMingzuService wxMingzuService;
 
     /**
      * 测试
      */
-    @Log(title = "智慧城市", businessType = BusinessType.OTHER)
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
     @ApiOperation("测试")
     @PostMapping("/test")
     public AjaxResult test(@RequestBody @Validated EncryptParam encryptParam) {
@@ -75,7 +84,7 @@ public class SmartCityController extends SbkBaseController {
     /**
      * 申领
      */
-    @Log(title = "智慧城市", businessType = BusinessType.OTHER)
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
     @ApiOperation("申领")
     @PostMapping("/shenling")
     public AjaxResult shenling(@RequestBody @Validated WxArchives wxArchives) {
@@ -139,7 +148,7 @@ public class SmartCityController extends SbkBaseController {
     /**
      * 获取邮寄费支付信息-申领
      */
-    @Log(title = "智慧城市", businessType = BusinessType.OTHER)
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
     @ApiOperation("获取邮寄费支付信息-申领")
     @PostMapping("/slOrderInfo")
     public AjaxResult slOrderInfo(@RequestBody @Validated SlOrderInfoParam slOrderInfoParam) {
@@ -189,7 +198,7 @@ public class SmartCityController extends SbkBaseController {
     /**
      * 新办卡资格校验
      */
-    @Log(title = "智慧城市", businessType = BusinessType.OTHER)
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
     @ApiOperation("新办卡资格校验")
     @PostMapping("/xbkzgjy")
     public AjaxResult xbkzgjy(@RequestBody @Validated XbkzgjyParam xbkzgjyParam) throws IOException {
@@ -243,7 +252,7 @@ public class SmartCityController extends SbkBaseController {
     /**
      * 重新采集数据回显
      */
-    @Log(title = "智慧城市", businessType = BusinessType.OTHER)
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
     @ApiOperation("重新采集数据回显")
     @PostMapping("/getCollectInfo")
     public AjaxResult getCollectInfo(@RequestBody @Validated XbkzgjyParam xbkzgjyParam) {
@@ -259,17 +268,17 @@ public class SmartCityController extends SbkBaseController {
     /**
      * 邮寄物流信息
      */
-    @Log(title = "智慧城市", businessType = BusinessType.OTHER)
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
     @ApiOperation("邮寄物流信息")
     @PostMapping("/mailInfo")
-    public AjaxResult mailInfo(String wldh) {
+    public AjaxResult mailInfo(@RequestBody @Validated String wldh) {
         return AjaxResult.success(smartCityService.selectMailInfoByWldh(wldh));
     }
 
     /**
      * 审核信息查询
      */
-    @Log(title = "智慧城市", businessType = BusinessType.OTHER)
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
     @ApiOperation("审核信息查询")
     @PostMapping("/examineInfo")
     public AjaxResult examineInfo(@RequestBody @Validated ExamineInfoParam examineInfoParam) {
@@ -304,7 +313,7 @@ public class SmartCityController extends SbkBaseController {
     /**
      * 人员基础信息变更
      */
-    @Log(title = "智慧城市", businessType = BusinessType.RYJCXXBG)
+    @Log(title = "电子社保卡", businessType = BusinessType.RYJCXXBG)
     @ApiOperation("人员基础信息变更")
     @PostMapping("/ryjcxxbg")
     public AjaxResult ryjcxxbg(@RequestBody @Validated EncryptParam encryptParam) {
@@ -336,7 +345,7 @@ public class SmartCityController extends SbkBaseController {
     /**
      * 解挂
      */
-    @Log(title = "智慧城市", businessType = BusinessType.JG)
+    @Log(title = "电子社保卡", businessType = BusinessType.JG)
     @ApiOperation("解挂")
     @PostMapping("/jg")
     public AjaxResult jg(@RequestBody @Validated EncryptParam encryptParam) {
@@ -350,7 +359,7 @@ public class SmartCityController extends SbkBaseController {
     /**
      * 注销
      */
-    @Log(title = "智慧城市", businessType = BusinessType.OTHER)
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
     @ApiOperation("注销")
     @PostMapping("/zx")
     public AjaxResult zx(@RequestBody @Validated EncryptParam encryptParam) {
@@ -364,7 +373,7 @@ public class SmartCityController extends SbkBaseController {
     /**
      * 正式挂失
      */
-    @Log(title = "智慧城市", businessType = BusinessType.ZSGS)
+    @Log(title = "电子社保卡", businessType = BusinessType.ZSGS)
     @ApiOperation("正式挂失")
     @PostMapping("/zsgs")
     public AjaxResult zsgs(@RequestBody @Validated EncryptParam encryptParam) {
@@ -378,7 +387,7 @@ public class SmartCityController extends SbkBaseController {
     /**
      * 服务密码重置
      */
-    @Log(title = "智慧城市", businessType = BusinessType.FWMMCZ)
+    @Log(title = "电子社保卡", businessType = BusinessType.FWMMCZ)
     @ApiOperation("服务密码重置")
     @PostMapping("/fwmmcz")
     public AjaxResult fwmmcz(@RequestBody @Validated EncryptParam encryptParam) {
@@ -392,7 +401,7 @@ public class SmartCityController extends SbkBaseController {
     /**
      * 服务密码修改
      */
-    @Log(title = "智慧城市", businessType = BusinessType.FWMMXG)
+    @Log(title = "电子社保卡", businessType = BusinessType.FWMMXG)
     @ApiOperation("服务密码修改")
     @PostMapping("/fwmmxg")
     public AjaxResult fwmmxg(@RequestBody @Validated EncryptParam encryptParam) {
@@ -401,5 +410,67 @@ public class SmartCityController extends SbkBaseController {
         String keyInfo = fwmmxgParam.getAac002() + "|" + fwmmxgParam.getAac003() + "|" + fwmmxgParam.getAaz500() + "|" + fwmmxgParam.getOldPassword() + "|" + fwmmxgParam.getNewPassword();
         Result result = sbkService.getResult("0821020", keyInfo);
         return toAjax(result);
+    }
+
+    /**
+     * 查询单位信息列表
+     */
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("查询单位信息列表")
+    @PostMapping("/unitinfoShi")
+    public AjaxResult unitinfoShi(@RequestBody @Validated UnitinfoShiParam unitinfoShiParam) {
+        List<UnitinfoShi> list = unitinfoShiService.list(new LambdaQueryWrapper<UnitinfoShi>()
+                .like(StrUtil.isNotBlank(unitinfoShiParam.getUnitname()), UnitinfoShi::getUnitname, unitinfoShiParam.getUnitname()));
+        return AjaxResult.success(list);
+    }
+
+    /**
+     * 查询银行信息列表
+     */
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("查询银行信息列表")
+    @PostMapping("/wxBukaBank")
+    public AjaxResult wxBukaBank(@RequestBody @Validated CodeParam codeParam) {
+        return AjaxResult.success(wxBukaBankService.list());
+    }
+
+    /**
+     * 查询代办人关系列表
+     */
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("查询代办人关系列表")
+    @PostMapping("/wxRelation")
+    public AjaxResult wxRelation(@RequestBody @Validated CodeParam codeParam) {
+        return AjaxResult.success(wxRelationService.list());
+    }
+
+    /**
+     * 查询户口性质列表
+     */
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("查询户口性质列表")
+    @PostMapping("/wxResidenceType")
+    public AjaxResult wxResidenceType(@RequestBody @Validated CodeParam codeParam) {
+        return AjaxResult.success(wxResidenceTypeService.list());
+    }
+
+    /**
+     * 查询职业信息列表
+     */
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("查询职业信息列表")
+    @PostMapping("/wxOccupation")
+    public AjaxResult wxOccupation(@RequestBody @Validated CodeParam codeParam) {
+        return AjaxResult.success(wxOccupationService.list());
+    }
+
+    /**
+     * 查询民族信息列表
+     */
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("查询民族信息列表")
+    @PostMapping("/wxMingzu")
+    public AjaxResult wxMingzu(@RequestBody @Validated CodeParam codeParam) {
+        return AjaxResult.success(wxMingzuService.list());
     }
 }

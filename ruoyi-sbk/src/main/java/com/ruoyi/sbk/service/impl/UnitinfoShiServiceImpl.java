@@ -1,5 +1,6 @@
 package com.ruoyi.sbk.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ruoyi.common.annotation.DataSource;
 import com.ruoyi.common.enums.DataSourceType;
@@ -21,6 +22,18 @@ import java.util.List;
 public class UnitinfoShiServiceImpl extends ServiceImpl<UnitinfoShiMapper, UnitinfoShi> implements IUnitinfoShiService {
     @Autowired
     private UnitinfoShiMapper unitinfoShiMapper;
+
+    @Override
+    @DataSource(value = DataSourceType.SLAVE)
+    public List<UnitinfoShi> selectListByLambdaQueryWrapper(LambdaQueryWrapper<UnitinfoShi> lambdaQueryWrapper) {
+        return unitinfoShiMapper.selectList(lambdaQueryWrapper);
+    }
+
+    @Override
+    @DataSource(value = DataSourceType.SLAVE)
+    public UnitinfoShi selectOneByLambdaQueryWrapper(LambdaQueryWrapper<UnitinfoShi> lambdaQueryWrapper) {
+        return unitinfoShiMapper.selectOne(lambdaQueryWrapper.last("limit 1"));
+    }
 
     /**
      * 查询单位信息列表

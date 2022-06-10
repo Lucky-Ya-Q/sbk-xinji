@@ -1,7 +1,9 @@
 package com.ruoyi.sbk.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ruoyi.sbk.domain.UnitinfoShi;
+import com.ruoyi.sbk.domain.WxDistrict2;
 
 import java.util.List;
 
@@ -12,6 +14,10 @@ import java.util.List;
  * @date 2022-03-17
  */
 public interface IUnitinfoShiService extends IService<UnitinfoShi> {
+    List<UnitinfoShi> selectListByLambdaQueryWrapper(LambdaQueryWrapper<UnitinfoShi> lambdaQueryWrapper);
+
+    UnitinfoShi selectOneByLambdaQueryWrapper(LambdaQueryWrapper<UnitinfoShi> lambdaQueryWrapper);
+
     /**
      * 查询单位信息列表
      *
