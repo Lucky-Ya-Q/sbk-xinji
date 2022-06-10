@@ -11,7 +11,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SbkUser;
+import com.ruoyi.common.enums.BusinessStatus;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.framework.manager.AsyncManager;
+import com.ruoyi.framework.manager.factory.AsyncFactory;
 import com.ruoyi.sbk.common.SbkBaseController;
 import com.ruoyi.sbk.domain.WxArchives;
 import com.ruoyi.sbk.domain.WxBukaInfo;
@@ -93,9 +97,14 @@ public class SmartCityController extends SbkBaseController {
             wxArchives.setStepStatus("9");
         }
 
-        String code = request.getParameter("code");
-        if ("f54791a523474e12b7c183f17c3cbcc2".equals(code)) {
-            wxArchives.setSource("4");
+        String code = wxArchives.getCode();
+        switch (code) {
+            case "f54791a523474e12b7c183f17c3cbcc2":
+                wxArchives.setSource("4");
+                break;
+            case "f1a04d853c2f8212210267ebbda5eadb":
+                wxArchives.setSource("1");
+                break;
         }
 
         wxArchives.setPersonid(String.valueOf(wxArchivesService.selectPersonidByMax() + 1));
@@ -132,7 +141,7 @@ public class SmartCityController extends SbkBaseController {
      */
     @Log(title = "智慧城市", businessType = BusinessType.OTHER)
     @ApiOperation("获取邮寄费支付信息-申领")
-    @GetMapping("/slOrderInfo")
+    @PostMapping("/slOrderInfo")
     public AjaxResult slOrderInfo(@RequestBody @Validated SlOrderInfoParam slOrderInfoParam) {
         Map<String, Object> result = new HashMap<>();
 
@@ -182,8 +191,8 @@ public class SmartCityController extends SbkBaseController {
      */
     @Log(title = "智慧城市", businessType = BusinessType.OTHER)
     @ApiOperation("新办卡资格校验")
-    @GetMapping("/xbkzgjy")
-    public AjaxResult xbkzgjy(@Validated XbkzgjyParam xbkzgjyParam) throws IOException {
+    @PostMapping("/xbkzgjy")
+    public AjaxResult xbkzgjy(@RequestBody @Validated XbkzgjyParam xbkzgjyParam) throws IOException {
         List<String> whiteList = new ArrayList<>();
         whiteList.add("130125200002094513"); // 刘元博
         if (!whiteList.contains(xbkzgjyParam.getSfzh())) {
@@ -201,10 +210,15 @@ public class SmartCityController extends SbkBaseController {
             }
         }
 
-        String code = request.getParameter("code");
+        String code = xbkzgjyParam.getCode();
         String source = "0";
-        if ("f54791a523474e12b7c183f17c3cbcc2".equals(code)) {
-            source = "4";
+        switch (code) {
+            case "f54791a523474e12b7c183f17c3cbcc2":
+                source = "4";
+                break;
+            case "f1a04d853c2f8212210267ebbda5eadb":
+                source = "1";
+                break;
         }
 
         WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getCardNum, xbkzgjyParam.getSfzh()).eq(WxArchives::getName, xbkzgjyParam.getXm()));
@@ -231,8 +245,8 @@ public class SmartCityController extends SbkBaseController {
      */
     @Log(title = "智慧城市", businessType = BusinessType.OTHER)
     @ApiOperation("重新采集数据回显")
-    @GetMapping("/getCollectInfo")
-    public AjaxResult getCollectInfo(@Validated XbkzgjyParam xbkzgjyParam) {
+    @PostMapping("/getCollectInfo")
+    public AjaxResult getCollectInfo(@RequestBody @Validated XbkzgjyParam xbkzgjyParam) {
         WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getCardNum, xbkzgjyParam.getSfzh()).eq(WxArchives::getName, xbkzgjyParam.getXm()));
         if (wxArchives == null) {
             return AjaxResult.error("未查到采集信息");
@@ -247,7 +261,7 @@ public class SmartCityController extends SbkBaseController {
      */
     @Log(title = "智慧城市", businessType = BusinessType.OTHER)
     @ApiOperation("邮寄物流信息")
-    @GetMapping("/mailInfo")
+    @PostMapping("/mailInfo")
     public AjaxResult mailInfo(String wldh) {
         return AjaxResult.success(smartCityService.selectMailInfoByWldh(wldh));
     }
@@ -257,8 +271,8 @@ public class SmartCityController extends SbkBaseController {
      */
     @Log(title = "智慧城市", businessType = BusinessType.OTHER)
     @ApiOperation("审核信息查询")
-    @GetMapping("/examineInfo")
-    public AjaxResult examineInfo(@Validated ExamineInfoParam examineInfoParam) {
+    @PostMapping("/examineInfo")
+    public AjaxResult examineInfo(@RequestBody @Validated ExamineInfoParam examineInfoParam) {
         Map<String, Object> result = new HashMap<>();
 
         String type = examineInfoParam.getType();

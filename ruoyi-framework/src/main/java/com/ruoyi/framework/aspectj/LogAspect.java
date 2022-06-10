@@ -112,15 +112,23 @@ public class LogAspect
                 AsyncManager.me().execute(AsyncFactory.recordOper(operLog));
                 throw new ServiceException("授权码不能为空");
             }
-            if (code.equals("f54791a523474e12b7c183f17c3cbcc2")){
-                operLog.setOperName("ceshi");
-            } else {
-                // 保存数据库
-                operLog.setStatus(BusinessStatus.FAIL.ordinal());
-                operLog.setErrorMsg("授权码错误");
-                operLog.setJsonResult("");
-                AsyncManager.me().execute(AsyncFactory.recordOper(operLog));
-                throw new ServiceException("授权码错误");
+            switch (code) {
+                case "f54791a523474e12b7c183f17c3cbcc2":
+                    operLog.setOperName("ceshi");
+                    break;
+                case "b1159fe9c99fce6abd2ab6d6cab99ea6":
+                    operLog.setOperName("shenpiju");
+                    break;
+                case "f1a04d853c2f8212210267ebbda5eadb":
+                    operLog.setOperName("weixin");
+                    break;
+                default:
+                    // 保存数据库
+                    operLog.setStatus(BusinessStatus.FAIL.ordinal());
+                    operLog.setErrorMsg("授权码错误");
+                    operLog.setJsonResult("");
+                    AsyncManager.me().execute(AsyncFactory.recordOper(operLog));
+                    throw new ServiceException("授权码错误");
             }
         }
         // 保存数据库
