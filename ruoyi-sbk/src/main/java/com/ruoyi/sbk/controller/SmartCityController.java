@@ -133,19 +133,12 @@ public class SmartCityController extends SbkBaseController {
     @Log(title = "智慧城市", businessType = BusinessType.OTHER)
     @ApiOperation("获取邮寄费支付信息-申领")
     @GetMapping("/slOrderInfo")
-    public AjaxResult slOrderInfo(String cardNum, String orderno) {
+    public AjaxResult slOrderInfo(@RequestBody @Validated SlOrderInfoParam slOrderInfoParam) {
         Map<String, Object> result = new HashMap<>();
 
-        if (StrUtil.isBlank(cardNum)) {
-            return AjaxResult.error("身份证号不能为空");
-        }
-        if (StrUtil.isBlank(orderno)) {
-            return AjaxResult.error("订单号不能为空");
-        }
-
         WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
-                .eq(WxArchives::getCardNum, cardNum)
-                .eq(WxArchives::getOrderno, orderno));
+                .eq(WxArchives::getCardNum, slOrderInfoParam.getCardNum())
+                .eq(WxArchives::getOrderno, slOrderInfoParam.getOrderno()));
         if (wxArchives == null) {
             return AjaxResult.error("未查询到社保卡信息");
         }

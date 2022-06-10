@@ -14,6 +14,8 @@ import javax.validation.constraints.NotNull;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class RyjcxxbgParam extends SbkUser {
+    @ApiModelProperty("授权码")
+    private String code;
     @NotBlank(message = "居住地址不能为空")
     @ApiModelProperty("居住地址")
     private String jzdz;

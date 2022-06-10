@@ -10,6 +10,8 @@ import javax.validation.constraints.NotBlank;
  */
 @Data
 public class AccountParam {
+    @ApiModelProperty("授权码")
+    private String code;
     @NotBlank(message = "用户名不能为空")
     @ApiModelProperty("用户名")
     private String username;

@@ -10,7 +10,6 @@ import javax.validation.constraints.NotBlank;
  */
 @Data
 public class EncryptParam {
-    @NotBlank(message = "授权码不能为空")
     @ApiModelProperty("授权码")
     private String code;
     @NotBlank(message = "请求体不能为空")

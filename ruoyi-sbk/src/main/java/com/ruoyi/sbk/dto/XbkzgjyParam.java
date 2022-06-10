@@ -10,6 +10,8 @@ import javax.validation.constraints.NotBlank;
  */
 @Data
 public class XbkzgjyParam {
+    @ApiModelProperty("授权码")
+    private String code;
     @NotBlank(message = "身份证号不能为空")
     @ApiModelProperty("身份证号")
     private String sfzh;

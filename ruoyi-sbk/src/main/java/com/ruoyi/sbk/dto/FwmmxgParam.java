@@ -13,6 +13,8 @@ import javax.validation.constraints.NotBlank;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class FwmmxgParam extends SbkUser {
+    @ApiModelProperty("授权码")
+    private String code;
     @NotBlank(message = "旧密码不能为空")
     @ApiModelProperty("旧密码")
     private String oldPassword;
