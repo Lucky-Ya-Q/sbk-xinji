@@ -1,7 +1,10 @@
 package com.ruoyi.sbk.controller;
 
 import cn.hutool.core.util.IdcardUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.SecureUtil;
+import cn.hutool.crypto.symmetric.AES;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -12,6 +15,7 @@ import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.sbk.common.SbkBaseController;
 import com.ruoyi.sbk.domain.WxArchives;
 import com.ruoyi.sbk.domain.WxBukaInfo;
+import com.ruoyi.sbk.domain.WxDistrict2;
 import com.ruoyi.sbk.domain.WxInfomationImg;
 import com.ruoyi.sbk.dto.*;
 import com.ruoyi.sbk.service.*;
@@ -47,6 +51,8 @@ public class SmartCityController extends SbkBaseController {
     private IWxInfomationImgService wxInfomationImgService;
     @Autowired
     private SmartCityService smartCityService;
+    @Autowired
+    private IWxDistrict2Service wxDistrict2Service;
 
     /**
      * 测试
@@ -69,11 +75,14 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("申领")
     @PostMapping("/shenling")
     public AjaxResult shenling(@RequestBody @Validated WxArchives wxArchives) {
-        wxArchives.setIsZhifu(0); // 未支付
         wxArchives.setExamineStatus("0"); // 未审核
+        wxArchives.setIsZhifu(0); // 未支付
+        int time = (int) (System.currentTimeMillis() / 1000);
+        wxArchives.setOrderno(time + RandomUtil.randomNumbers(4)); // 订单号
         wxArchives.setReturnFlag(0); // 未申请退费
         wxArchives.setExamineReturnFlag(0); // 申请退费未审核
         wxArchives.setAddTime(new Date());
+
 
         if (!IdcardUtil.isValidCard(wxArchives.getCardNum())) {
             return AjaxResult.error("身份证号码格式错误");
@@ -116,6 +125,63 @@ public class SmartCityController extends SbkBaseController {
 
         smartCityService.saveArchivesAndImg(wxArchives);
         return AjaxResult.success("操作成功");
+    }
+
+    /**
+     * 获取邮寄费支付信息-申领
+     */
+    @Log(title = "智慧城市", businessType = BusinessType.OTHER)
+    @ApiOperation("获取邮寄费支付信息-申领")
+    @GetMapping("/slOrderInfo")
+    public AjaxResult slOrderInfo(String cardNum, String orderno) {
+        Map<String, Object> result = new HashMap<>();
+
+        if (StrUtil.isBlank(cardNum)) {
+            return AjaxResult.error("身份证号不能为空");
+        }
+        if (StrUtil.isBlank(orderno)) {
+            return AjaxResult.error("订单号不能为空");
+        }
+
+        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
+                .eq(WxArchives::getCardNum, cardNum)
+                .eq(WxArchives::getOrderno, orderno));
+        if (wxArchives == null) {
+            return AjaxResult.error("未查询到社保卡信息");
+        }
+        if (wxArchives.getIsZhifu() == 1) {
+            return AjaxResult.error("已支付");
+        }
+
+        Integer mailPrice = 20;
+        WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>()
+                .eq(WxDistrict2::getCode, wxArchives.getCountyCodeMail()));
+        if (wxDistrict2 != null) {
+            mailPrice = wxDistrict2.getMailPrice();
+        }
+
+        JSONObject jsonObject = smartCityService.putOrderinfo(wxArchives, mailPrice);
+        Integer status = jsonObject.getInteger("status");
+        if (status == 1) {
+            result.put("mailPrice", mailPrice);
+
+            AES aes = SecureUtil.aes("3MH0P00OPS3OOROE".getBytes());
+            jsonObject.remove("status");
+            jsonObject.remove("error_desc");
+            String content = aes.encryptBase64(jsonObject.toJSONString());
+
+            String payUrl = StrUtil.format(
+                    "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc2bd458948e845a0&redirect_uri={}&response_type=code&scope=snsapi_base&state={}&connect_redirect=1",
+                    "http://dingzhou.sjzydrj.net/index.php/home/Pay/wxpay/",
+                    content);
+
+            result.put("payUrl", payUrl);
+
+            return AjaxResult.success(result);
+        } else {
+            String errorDesc = jsonObject.getString("error_desc");
+            return AjaxResult.error(errorDesc);
+        }
     }
 
     /**

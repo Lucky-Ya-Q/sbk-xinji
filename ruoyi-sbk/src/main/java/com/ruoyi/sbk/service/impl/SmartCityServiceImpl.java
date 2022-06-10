@@ -1,5 +1,7 @@
 package com.ruoyi.sbk.service.impl;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.symmetric.AES;
 import com.alibaba.fastjson.JSON;
@@ -8,6 +10,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ruoyi.common.annotation.DataSource;
 import com.ruoyi.common.enums.DataSourceType;
 import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.sbk.domain.WxArchives;
 import com.ruoyi.sbk.mapper.WxArchivesMapper;
 import com.ruoyi.sbk.mapper.WxInfomationImgMapper;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,8 +44,8 @@ public class SmartCityServiceImpl implements SmartCityService {
         hashMap.put("MAIL_NUM", wldh);
         String content = aes.encryptBase64(JSON.toJSONString(hashMap));
         String result = restTemplate.postForObject(url, content, String.class);
-        if (result == null) {
-            throw new ServiceException("没有查到物流信息");
+        if (StrUtil.isEmpty(result)) {
+            throw new ServiceException("错误");
         }
         result = aes.decryptStr(result.replaceAll("\\r\\n", ""));
         return JSON.parseObject(result);
@@ -51,13 +55,40 @@ public class SmartCityServiceImpl implements SmartCityService {
     @Transactional
     @DataSource(value = DataSourceType.SLAVE)
     public void saveArchivesAndImg(WxArchives wxArchives) {
-        Long count = wxArchivesMapper.selectCount(new LambdaQueryWrapper<WxArchives>()
-                .eq(WxArchives::getCardNum, wxArchives.getCardNum())
-                .eq(WxArchives::getName, wxArchives.getName()));
+        Long count = wxArchivesMapper.selectCount(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getCardNum, wxArchives.getCardNum()).eq(WxArchives::getName, wxArchives.getName()));
         if (count > 0) {
             throw new ServiceException("采集信息已存在");
         }
         wxArchivesMapper.insert(wxArchives);
         wxInfomationImgMapper.insert(wxArchives.getWxInfomationImg());
+    }
+
+    @Override
+    public JSONObject putOrderinfo(WxArchives wxArchives, Integer mailPrice) {
+        AES aes = SecureUtil.aes("3MH0P00OPS3OOROE".getBytes());
+        String url = "http://dingzhou.sjzydrj.net/index.php/Home/Orderpayapi/put_orderinfo";
+//        String url = "http://10.39.248.217:9904/orderpayapi";
+        Map<String, Object> hashMap = new HashMap<>();
+        hashMap.put("auth_code", "TWXUCQSOMT48MXWWURVTWGBI5PSSNN76");
+        hashMap.put("cust_appid", "wxde85bc4bf1f7629a");
+        hashMap.put("cust_order_code", wxArchives.getOrderno());
+        hashMap.put("shou_date", DateUtil.format(new Date(), "yyyyMMdd"));
+        String[] communicationAddresss = wxArchives.getCommunicationAddress().split("/");
+        hashMap.put("shou_address_prov", communicationAddresss[0]);
+        hashMap.put("shou_address_city", communicationAddresss[1]);
+        hashMap.put("shou_address_coun", communicationAddresss[2]);
+        hashMap.put("shou_detailed_address", wxArchives.getDetailedAddress());
+        hashMap.put("shou_zoon_code", wxArchives.getCountyCode());
+        hashMap.put("shou_phone", wxArchives.getPhone());
+        hashMap.put("shou_idcardno", wxArchives.getCardNum());
+        hashMap.put("cost_fee", mailPrice * 100);
+        hashMap.put("ordercode", 1); // 1:社保卡申领 2:补换卡
+        String content = aes.encryptBase64(JSON.toJSONString(hashMap));
+        String result = restTemplate.postForObject(url, content, String.class);
+        if (StrUtil.isEmpty(result)) {
+            throw new ServiceException("错误");
+        }
+        result = aes.decryptStr(result.replaceAll("\"", ""));
+        return JSON.parseObject(result);
     }
 }

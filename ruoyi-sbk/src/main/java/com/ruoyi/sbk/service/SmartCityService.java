@@ -7,4 +7,6 @@ public interface SmartCityService {
     JSONObject selectMailInfoByWldh(String wldh);
 
     void saveArchivesAndImg(WxArchives wxArchives);
+
+    JSONObject putOrderinfo(WxArchives wxArchives, Integer mailPrice);
 }
