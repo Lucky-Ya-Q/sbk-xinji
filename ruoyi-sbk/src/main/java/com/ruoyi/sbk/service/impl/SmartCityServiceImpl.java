@@ -4,10 +4,17 @@ import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.symmetric.AES;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.ruoyi.common.annotation.DataSource;
+import com.ruoyi.common.enums.DataSourceType;
 import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.sbk.domain.WxArchives;
+import com.ruoyi.sbk.mapper.WxArchivesMapper;
+import com.ruoyi.sbk.mapper.WxInfomationImgMapper;
 import com.ruoyi.sbk.service.SmartCityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
@@ -17,6 +24,10 @@ import java.util.Map;
 public class SmartCityServiceImpl implements SmartCityService {
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private WxArchivesMapper wxArchivesMapper;
+    @Autowired
+    private WxInfomationImgMapper wxInfomationImgMapper;
 
     @Override
     public JSONObject selectMailInfoByWldh(String wldh) {
@@ -34,5 +45,19 @@ public class SmartCityServiceImpl implements SmartCityService {
         }
         result = aes.decryptStr(result.replaceAll("\\r\\n", ""));
         return JSON.parseObject(result);
+    }
+
+    @Override
+    @Transactional
+    @DataSource(value = DataSourceType.SLAVE)
+    public void saveArchivesAndImg(WxArchives wxArchives) {
+        Long count = wxArchivesMapper.selectCount(new LambdaQueryWrapper<WxArchives>()
+                .eq(WxArchives::getCardNum, wxArchives.getCardNum())
+                .eq(WxArchives::getName, wxArchives.getName()));
+        if (count > 0) {
+            throw new ServiceException("采集信息已存在");
+        }
+        wxArchivesMapper.insert(wxArchives);
+        wxInfomationImgMapper.insert(wxArchives.getWxInfomationImg());
     }
 }

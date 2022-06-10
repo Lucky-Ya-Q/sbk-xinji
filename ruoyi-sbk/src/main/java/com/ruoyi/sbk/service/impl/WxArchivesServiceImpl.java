@@ -54,9 +54,8 @@ public class WxArchivesServiceImpl extends ServiceImpl<WxArchivesMapper, WxArchi
     @Override
     @DataSource(value = DataSourceType.SLAVE)
     public Integer selectPersonidByMax() {
-        LambdaQueryWrapper<WxArchives> wxArchivesLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        wxArchivesLambdaQueryWrapper.orderByDesc(WxArchives::getPersonid).last("limit 1");
-        WxArchives wxArchives = wxArchivesMapper.selectOne(wxArchivesLambdaQueryWrapper);
+        WxArchives wxArchives = wxArchivesMapper.selectOne(new LambdaQueryWrapper<WxArchives>()
+                .orderByDesc(WxArchives::getPersonid).last("limit 1"));
         return Integer.valueOf(wxArchives.getPersonid());
     }
 

@@ -1,5 +1,7 @@
 package com.ruoyi.sbk.controller;
 
+import cn.hutool.core.util.IdcardUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -26,10 +28,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Api(tags = "智慧城市")
@@ -64,6 +63,62 @@ public class SmartCityController extends SbkBaseController {
     }
 
     /**
+     * 申领
+     */
+    @Log(title = "智慧城市", businessType = BusinessType.OTHER)
+    @ApiOperation("申领")
+    @PostMapping("/shenling")
+    public AjaxResult shenling(@RequestBody @Validated WxArchives wxArchives) {
+        wxArchives.setIsZhifu(0); // 未支付
+        wxArchives.setExamineStatus("0"); // 未审核
+        wxArchives.setReturnFlag(0); // 未申请退费
+        wxArchives.setExamineReturnFlag(0); // 申请退费未审核
+        wxArchives.setAddTime(new Date());
+
+        if (!IdcardUtil.isValidCard(wxArchives.getCardNum())) {
+            return AjaxResult.error("身份证号码格式错误");
+        }
+
+        wxArchives.setStepStatus("999");
+        if ("0".equals(wxArchives.getIsMail())) {
+            wxArchives.setStepStatus("9");
+        }
+
+        String code = request.getParameter("code");
+        if ("f54791a523474e12b7c183f17c3cbcc2".equals(code)) {
+            wxArchives.setSource("4");
+        }
+
+        wxArchives.setPersonid(String.valueOf(wxArchivesService.selectPersonidByMax() + 1));
+
+
+        boolean isAdult = IdcardUtil.getAgeByIdCard(wxArchives.getCardNum()) > 16;
+        wxArchives.setIsAdult(isAdult ? "0" : "1");
+
+        if (!isAdult) {
+            if (StrUtil.isBlank(wxArchives.getGuardianName())) {
+                return AjaxResult.error("监护人姓名不能为空");
+            }
+            if (StrUtil.isBlank(wxArchives.getGuardianCardNum())) {
+                return AjaxResult.error("监护人身份证号码不能为空");
+            }
+            if (!IdcardUtil.isValidCard(wxArchives.getGuardianCardNum())) {
+                return AjaxResult.error("监护人身份证号码格式错误");
+            }
+
+            int gender = IdcardUtil.getGenderByIdCard(wxArchives.getGuardianCardNum());
+            wxArchives.setDaiSex(gender == 1 ? "男" : "女");
+
+        }
+
+        WxInfomationImg wxInfomationImg = wxArchives.getWxInfomationImg();
+        wxInfomationImg.setPersonid(String.valueOf(wxInfomationImgService.selectPersonidByMax() + 1));
+
+        smartCityService.saveArchivesAndImg(wxArchives);
+        return AjaxResult.success("操作成功");
+    }
+
+    /**
      * 新办卡资格校验
      */
     @Log(title = "智慧城市", businessType = BusinessType.OTHER)
@@ -88,14 +143,12 @@ public class SmartCityController extends SbkBaseController {
         }
 
         String code = request.getParameter("code");
-        String source = "";
+        String source = "0";
         if ("f54791a523474e12b7c183f17c3cbcc2".equals(code)) {
-            source = "shenpiju";
+            source = "4";
         }
 
-        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
-                .eq(WxArchives::getCardNum, xbkzgjyParam.getSfzh())
-                .eq(WxArchives::getName, xbkzgjyParam.getXm()));
+        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getCardNum, xbkzgjyParam.getSfzh()).eq(WxArchives::getName, xbkzgjyParam.getXm()));
         if (wxArchives != null) {
             // 审核状态：0代表未审核 1代表审核通过 2代表审核未通过
             String examineStatus = wxArchives.getExamineStatus();
@@ -121,14 +174,11 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("重新采集数据回显")
     @GetMapping("/getCollectInfo")
     public AjaxResult getCollectInfo(@Validated XbkzgjyParam xbkzgjyParam) {
-        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
-                .eq(WxArchives::getCardNum, xbkzgjyParam.getSfzh())
-                .eq(WxArchives::getName, xbkzgjyParam.getXm()));
+        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getCardNum, xbkzgjyParam.getSfzh()).eq(WxArchives::getName, xbkzgjyParam.getXm()));
         if (wxArchives == null) {
             return AjaxResult.error("未查到采集信息");
         }
-        WxInfomationImg wxInfomationImg = wxInfomationImgService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxInfomationImg>()
-                .eq(WxInfomationImg::getCardNum, xbkzgjyParam.getSfzh()));
+        WxInfomationImg wxInfomationImg = wxInfomationImgService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxInfomationImg>().eq(WxInfomationImg::getCardNum, xbkzgjyParam.getSfzh()));
         wxArchives.setWxInfomationImg(wxInfomationImg);
         return AjaxResult.success(wxArchives);
     }
@@ -154,9 +204,7 @@ public class SmartCityController extends SbkBaseController {
 
         String type = examineInfoParam.getType();
         if (type.equals("shenling")) {
-            WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
-                    .eq(WxArchives::getCardNum, examineInfoParam.getSfzh())
-                    .eq(WxArchives::getName, examineInfoParam.getXm()));
+            WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getCardNum, examineInfoParam.getSfzh()).eq(WxArchives::getName, examineInfoParam.getXm()));
             if (wxArchives == null) {
                 return AjaxResult.error("未查到申领数据");
             }
@@ -165,9 +213,7 @@ public class SmartCityController extends SbkBaseController {
             result.put("examineTime", wxArchives.getExamineTime()); // 审核时间
             result.put("rejectReason", wxArchives.getReason()); // 驳回原因
         } else if (type.equals("buhuanka")) {
-            WxBukaInfo wxBukaInfo = wxBukaInfoService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxBukaInfo>()
-                    .eq(WxBukaInfo::getIdcardno, examineInfoParam.getSfzh())
-                    .eq(WxBukaInfo::getKaName, examineInfoParam.getXm()));
+            WxBukaInfo wxBukaInfo = wxBukaInfoService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxBukaInfo>().eq(WxBukaInfo::getIdcardno, examineInfoParam.getSfzh()).eq(WxBukaInfo::getKaName, examineInfoParam.getXm()));
             if (wxBukaInfo == null) {
                 return AjaxResult.error("未查到补换卡数据");
             }

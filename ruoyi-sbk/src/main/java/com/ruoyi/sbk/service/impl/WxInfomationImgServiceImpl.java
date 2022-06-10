@@ -38,17 +38,15 @@ public class WxInfomationImgServiceImpl extends ServiceImpl<WxInfomationImgMappe
     @Override
     @DataSource(value = DataSourceType.SLAVE)
     public WxInfomationImg selectOneBySfzh(String cardNum) {
-        LambdaQueryWrapper<WxInfomationImg> wxInfomationImgLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        wxInfomationImgLambdaQueryWrapper.eq(WxInfomationImg::getCardNum, cardNum);
-        return wxInfomationImgMapper.selectOne(wxInfomationImgLambdaQueryWrapper);
+        return wxInfomationImgMapper.selectOne(new LambdaQueryWrapper<WxInfomationImg>()
+                .eq(WxInfomationImg::getCardNum, cardNum));
     }
 
     @Override
     @DataSource(value = DataSourceType.SLAVE)
     public Integer selectPersonidByMax() {
-        LambdaQueryWrapper<WxInfomationImg> wxInfomationImgLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        wxInfomationImgLambdaQueryWrapper.orderByDesc(WxInfomationImg::getPersonid).last("limit 1");
-        WxInfomationImg wxInfomationImg = wxInfomationImgMapper.selectOne(wxInfomationImgLambdaQueryWrapper);
+        WxInfomationImg wxInfomationImg = wxInfomationImgMapper.selectOne(new LambdaQueryWrapper<WxInfomationImg>()
+                .orderByDesc(WxInfomationImg::getPersonid).last("limit 1"));
         return Integer.valueOf(wxInfomationImg.getPersonid());
     }
 }

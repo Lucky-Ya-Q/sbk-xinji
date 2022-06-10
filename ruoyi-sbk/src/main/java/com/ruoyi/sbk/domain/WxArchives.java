@@ -28,8 +28,7 @@ public class WxArchives {
     /**
      * 数据来源：1微信公众号  2：12333网站
      */
-    @NotBlank(message = "数据来源不能为空")
-    @ApiModelProperty("数据来源：2服务平台  3管理后台")
+    @ApiModelProperty("数据来源：1微信公众号  2服务平台  3管理后台  4辛集审批局")
     private String source;
 
     /**

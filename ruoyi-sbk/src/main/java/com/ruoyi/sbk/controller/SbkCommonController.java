@@ -184,7 +184,7 @@ public class SbkCommonController {
         String birthday = DateUtil.format(DateUtil.parse(IdcardUtil.getBirthByIdCard(cardNum)), "yyyy-MM-dd");
         wxArchives.setBirthday(birthday);
         int age = IdcardUtil.getAgeByIdCard(cardNum);
-        wxArchives.setIsAdult(age > 16 ? "1" : "0");
+        wxArchives.setIsAdult(age > 16 ? "0" : "1");
 
         if ("0".equals(wxArchives.getIsAdult())) {
             // 监护人身份证号码
