@@ -70,18 +70,6 @@ public class SmartCityController extends SbkBaseController {
     private WxMpService wxMpService;
 
     /**
-     * 微信网页授权测试
-     */
-    @ApiOperation("微信网页授权测试")
-    @GetMapping("/mptest")
-    public AjaxResult mptest(String code) throws WxErrorException {
-        WxOAuth2AccessToken wxOAuth2AccessToken = wxMpService.getOAuth2Service().getAccessToken(code);
-        WxOAuth2UserInfo wxOAuth2UserInfo = wxMpService.getOAuth2Service().getUserInfo(wxOAuth2AccessToken, null);
-        WxMpUser wxMpUser = wxMpService.getUserService().userInfo(wxOAuth2UserInfo.getOpenid());
-        return AjaxResult.success(wxMpUser);
-    }
-
-    /**
      * 测试
      */
     @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
