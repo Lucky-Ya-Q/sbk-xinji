@@ -288,7 +288,7 @@ public class SmartCityController extends SbkBaseController {
     }
 
     /**
-     * 可申请邮寄退费列表 - 微信
+     * 可申请退邮寄费列表 - 微信
      */
     @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
     @ApiOperation("可申请邮寄退费列表 - 微信")

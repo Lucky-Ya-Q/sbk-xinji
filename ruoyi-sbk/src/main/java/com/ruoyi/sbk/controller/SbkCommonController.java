@@ -94,7 +94,7 @@ public class SbkCommonController {
     @ApiOperation("上传证件照")
     @PostMapping("/upload")
     public AjaxResult upload(MultipartFile file, String sfzh, String type) {
-        String[] types = {"head", "shen_zheng", "shen_fan", "shen_hu", "dai_zheng", "dai_fan", "dai_hu", "qianming"};
+        String[] types = {"head", "shen_zheng", "shen_fan", "shen_hu", "shen_hu_head", "dai_zheng", "dai_fan", "dai_hu", "qianming"};
         List<String> typeList = Arrays.asList(types);
         if (!typeList.contains(type)) {
             return AjaxResult.error("目录类型不合法", types);
