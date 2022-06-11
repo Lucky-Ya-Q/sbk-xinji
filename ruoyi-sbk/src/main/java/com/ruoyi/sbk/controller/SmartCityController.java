@@ -260,7 +260,7 @@ public class SmartCityController extends SbkBaseController {
             }
             jsonObject = smartCityService.putOrderinfo(wxBukaInfo, mailPrice);
         } else {
-            return AjaxResult.error("审核类型错误");
+            return AjaxResult.error("领卡类型错误");
         }
 
 
@@ -285,6 +285,59 @@ public class SmartCityController extends SbkBaseController {
             String errorDesc = jsonObject.getString("error_desc");
             return AjaxResult.error(errorDesc);
         }
+    }
+
+    /**
+     * 可申请邮寄退费列表 - 微信
+     */
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("可申请邮寄退费列表 - 微信")
+    @PostMapping("/wxReturnList")
+    public AjaxResult wxReturnList(@RequestBody @Validated WxReturnListParam wxReturnListParam) {
+        List<WxArchives> wxArchivesList = wxArchivesService.selectListByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
+                .eq(WxArchives::getOpenid, wxReturnListParam.getOpenId())
+                .notIn(WxArchives::getExamineStatus, 0, 2));
+        return AjaxResult.success(wxArchivesList);
+    }
+
+    /**
+     * 申请退邮寄费 - 微信
+     */
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("申请退邮寄费 - 微信")
+    @PostMapping("/wxReturnOrder")
+    public AjaxResult wxReturnOrder(@RequestBody @Validated WxReturnOrderParam wxReturnOrderParam) {
+        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
+                .eq(WxArchives::getOrderno, wxReturnOrderParam.getOrderno())
+                .notIn(WxArchives::getExamineStatus, 0, 2));
+        if (wxArchives == null) {
+            return AjaxResult.error("未查到满足退费条件的订单");
+        }
+        wxArchives.setReturnFlag(1);
+        wxArchives.setReturnReason("申请合并邮寄");
+        wxArchives.setReturnTime(new Date());
+        return AjaxResult.success();
+    }
+
+    /**
+     * 申请退邮寄费
+     */
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("申请退邮寄费")
+    @PostMapping("/returnOrder")
+    public AjaxResult returnOrder(@RequestBody @Validated ReturnOrderParam returnOrderParam) {
+        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
+                .eq(WxArchives::getCardNum, returnOrderParam.getSfzh())
+                .eq(WxArchives::getName, returnOrderParam.getXm())
+                .eq(WxArchives::getPhone, returnOrderParam.getPhone())
+                .notIn(WxArchives::getExamineStatus, 0, 2));
+        if (wxArchives == null) {
+            return AjaxResult.error("未查到满足退费条件的订单");
+        }
+        wxArchives.setReturnFlag(1);
+        wxArchives.setReturnReason("申请合并邮寄");
+        wxArchives.setReturnTime(new Date());
+        return AjaxResult.success();
     }
 
     /**
@@ -398,7 +451,7 @@ public class SmartCityController extends SbkBaseController {
             result.put("examineTime", wxBukaInfo.getExamineTime()); // 审核时间
             result.put("rejectReason", wxBukaInfo.getRejectReason()); // 驳回原因
         } else {
-            return AjaxResult.error("审核类型错误");
+            return AjaxResult.error("领卡类型错误");
         }
 
         return AjaxResult.success(result);
