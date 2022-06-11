@@ -153,6 +153,7 @@ public class SmartCityController extends SbkBaseController {
         }
 
         WxInfomationImg wxInfomationImg = wxArchives.getWxInfomationImg();
+        wxInfomationImg.setCardNum(wxArchives.getGuardianCardNum());
         wxInfomationImg.setPersonid(String.valueOf(wxInfomationImgService.selectPersonidByMax() + 1));
 
         smartCityService.saveArchivesAndImg(wxArchives);
@@ -197,6 +198,7 @@ public class SmartCityController extends SbkBaseController {
         }
 
         WxInfomationImg wxInfomationImg = wxArchives.getWxInfomationImg();
+        wxInfomationImg.setCardNum(wxArchives.getGuardianCardNum());
         wxInfomationImg.setPersonid(null);
 
         smartCityService.updateArchivesAndImg(wxArchives);
