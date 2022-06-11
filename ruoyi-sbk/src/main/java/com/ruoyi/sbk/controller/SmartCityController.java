@@ -346,18 +346,18 @@ public class SmartCityController extends SbkBaseController {
     /**
      * 重新采集数据回显
      */
-    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
-    @ApiOperation("重新采集数据回显")
-    @PostMapping("/getCollectInfo")
-    public AjaxResult getCollectInfo(@RequestBody @Validated XbkzgjyParam xbkzgjyParam) {
-        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getCardNum, xbkzgjyParam.getSfzh()).eq(WxArchives::getName, xbkzgjyParam.getXm()));
-        if (wxArchives == null) {
-            return AjaxResult.error("未查到采集信息");
-        }
-        WxInfomationImg wxInfomationImg = wxInfomationImgService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxInfomationImg>().eq(WxInfomationImg::getCardNum, xbkzgjyParam.getSfzh()));
-        wxArchives.setWxInfomationImg(wxInfomationImg);
-        return AjaxResult.success(wxArchives);
-    }
+//    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+//    @ApiOperation("重新采集数据回显")
+//    @PostMapping("/getCollectInfo")
+//    public AjaxResult getCollectInfo(@RequestBody @Validated XbkzgjyParam xbkzgjyParam) {
+//        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getCardNum, xbkzgjyParam.getSfzh()).eq(WxArchives::getName, xbkzgjyParam.getXm()));
+//        if (wxArchives == null) {
+//            return AjaxResult.error("未查到采集信息");
+//        }
+//        WxInfomationImg wxInfomationImg = wxInfomationImgService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxInfomationImg>().eq(WxInfomationImg::getCardNum, xbkzgjyParam.getSfzh()));
+//        wxArchives.setWxInfomationImg(wxInfomationImg);
+//        return AjaxResult.success(wxArchives);
+//    }
 
     /**
      * 邮寄物流信息
