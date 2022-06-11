@@ -331,6 +331,20 @@ public class SmartCityController extends SbkBaseController {
     }
 
     /**
+     * 取消补卡申请原因
+     */
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("取消补卡申请原因")
+    @PostMapping("/reasonList")
+    public AjaxResult reasonList(@RequestBody @Validated CodeParam codeParam) {
+        List<String> list = new ArrayList<>();
+        list.add("卡已找到");
+        list.add("线下网点办理");
+        list.add("其他");
+        return AjaxResult.success(list);
+    }
+
+    /**
      * 新办卡资格校验
      */
     @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
