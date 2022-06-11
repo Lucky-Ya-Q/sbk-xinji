@@ -10,8 +10,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ruoyi.common.annotation.DataSource;
 import com.ruoyi.common.enums.DataSourceType;
 import com.ruoyi.common.exception.ServiceException;
-import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.sbk.domain.WxArchives;
+import com.ruoyi.sbk.domain.WxBukaInfo;
 import com.ruoyi.sbk.mapper.WxArchivesMapper;
 import com.ruoyi.sbk.mapper.WxInfomationImgMapper;
 import com.ruoyi.sbk.service.SmartCityService;
@@ -64,6 +64,14 @@ public class SmartCityServiceImpl implements SmartCityService {
     }
 
     @Override
+    @Transactional
+    @DataSource(value = DataSourceType.SLAVE)
+    public void updateArchivesAndImg(WxArchives wxArchives) {
+        wxArchivesMapper.updateById(wxArchives);
+        wxInfomationImgMapper.updateById(wxArchives.getWxInfomationImg());
+    }
+
+    @Override
     public JSONObject putOrderinfo(WxArchives wxArchives, Integer mailPrice) {
         AES aes = SecureUtil.aes("3MH0P00OPS3OOROE".getBytes());
         String url = "http://dingzhou.sjzydrj.net/index.php/Home/Orderpayapi/put_orderinfo";
@@ -81,6 +89,34 @@ public class SmartCityServiceImpl implements SmartCityService {
         hashMap.put("shou_zoon_code", wxArchives.getCountyCode());
         hashMap.put("shou_phone", wxArchives.getPhone());
         hashMap.put("shou_idcardno", wxArchives.getCardNum());
+        hashMap.put("cost_fee", mailPrice * 100);
+        hashMap.put("ordercode", 1); // 1:社保卡申领 2:补换卡
+        String content = aes.encryptBase64(JSON.toJSONString(hashMap));
+        String result = restTemplate.postForObject(url, content, String.class);
+        if (StrUtil.isEmpty(result)) {
+            throw new ServiceException("错误");
+        }
+        result = aes.decryptStr(result.replaceAll("\"", ""));
+        return JSON.parseObject(result);
+    }
+
+    @Override
+    public JSONObject putOrderinfo(WxBukaInfo wxBukaInfo, Integer mailPrice) {
+        AES aes = SecureUtil.aes("3MH0P00OPS3OOROE".getBytes());
+        String url = "http://dingzhou.sjzydrj.net/index.php/Home/Orderpayapi/put_orderinfo";
+//        String url = "http://10.39.248.217:9904/orderpayapi";
+        Map<String, Object> hashMap = new HashMap<>();
+        hashMap.put("auth_code", "TWXUCQSOMT48MXWWURVTWGBI5PSSNN76");
+        hashMap.put("cust_appid", "wxde85bc4bf1f7629a");
+        hashMap.put("cust_order_code", wxBukaInfo.getOrderno());
+        hashMap.put("shou_date", DateUtil.format(new Date(), "yyyyMMdd"));
+        hashMap.put("shou_address_prov", wxBukaInfo.getShouAddressProv());
+        hashMap.put("shou_address_city", wxBukaInfo.getShouAddressCity());
+        hashMap.put("shou_address_coun", wxBukaInfo.getShouAddressCoun());
+        hashMap.put("shou_detailed_address", wxBukaInfo.getShouDetailedAddress());
+        hashMap.put("shou_zoon_code", wxBukaInfo.getShouZoonCode());
+        hashMap.put("shou_phone", wxBukaInfo.getShouPhone());
+        hashMap.put("shou_idcardno", wxBukaInfo.getIdcardno());
         hashMap.put("cost_fee", mailPrice * 100);
         hashMap.put("ordercode", 1); // 1:社保卡申领 2:补换卡
         String content = aes.encryptBase64(JSON.toJSONString(hashMap));

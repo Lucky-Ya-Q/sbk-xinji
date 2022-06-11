@@ -11,11 +11,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SbkUser;
-import com.ruoyi.common.enums.BusinessStatus;
 import com.ruoyi.common.enums.BusinessType;
-import com.ruoyi.common.exception.ServiceException;
-import com.ruoyi.framework.manager.AsyncManager;
-import com.ruoyi.framework.manager.factory.AsyncFactory;
 import com.ruoyi.sbk.common.SbkBaseController;
 import com.ruoyi.sbk.domain.*;
 import com.ruoyi.sbk.dto.*;
@@ -26,7 +22,11 @@ import com.tecsun.sm.utils.ParamUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
+import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
+import me.chanjar.weixin.common.bean.oauth2.WxOAuth2AccessToken;
+import me.chanjar.weixin.common.error.WxErrorException;
+import me.chanjar.weixin.mp.api.WxMpService;
+import me.chanjar.weixin.mp.bean.result.WxMpUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -66,6 +66,20 @@ public class SmartCityController extends SbkBaseController {
     private IWxOccupationService wxOccupationService;
     @Autowired
     private IWxMingzuService wxMingzuService;
+    @Autowired
+    private WxMpService wxMpService;
+
+    /**
+     * 微信网页授权测试
+     */
+    @ApiOperation("微信网页授权测试")
+    @GetMapping("/mptest")
+    public AjaxResult mptest(String code) throws WxErrorException {
+        WxOAuth2AccessToken wxOAuth2AccessToken = wxMpService.getOAuth2Service().getAccessToken(code);
+        WxOAuth2UserInfo wxOAuth2UserInfo = wxMpService.getOAuth2Service().getUserInfo(wxOAuth2AccessToken, null);
+        WxMpUser wxMpUser = wxMpService.getUserService().userInfo(wxOAuth2UserInfo.getOpenid());
+        return AjaxResult.success(wxMpUser);
+    }
 
     /**
      * 测试
@@ -73,12 +87,24 @@ public class SmartCityController extends SbkBaseController {
     @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
     @ApiOperation("测试")
     @PostMapping("/test")
-    public AjaxResult test(@RequestBody @Validated EncryptParam encryptParam) {
+    public AjaxResult test(@RequestBody @Validated EncryptParam encryptParam) throws WxErrorException {
         SbkUser sbkUser = JSON.parseObject(AESUtils.decrypt(encryptParam.getBody(), AESUtils.KEY), SbkUser.class);
         String jsonString = JSON.toJSONString(sbkUser);
         log.info("解密后的数据：{}", jsonString);
         String encrypt = AESUtils.encrypt(jsonString, AESUtils.KEY);
         return AjaxResult.success("操作成功", encrypt);
+    }
+
+    /**
+     * 微信网页授权
+     */
+    @ApiOperation("微信网页授权")
+    @GetMapping("/userInfo")
+    public AjaxResult userInfo(String code) throws WxErrorException {
+        WxOAuth2AccessToken wxOAuth2AccessToken = wxMpService.getOAuth2Service().getAccessToken(code);
+        WxOAuth2UserInfo wxOAuth2UserInfo = wxMpService.getOAuth2Service().getUserInfo(wxOAuth2AccessToken, null);
+        WxMpUser wxMpUser = wxMpService.getUserService().userInfo(wxOAuth2UserInfo.getOpenid());
+        return AjaxResult.success(wxMpUser);
     }
 
     /**
@@ -145,33 +171,99 @@ public class SmartCityController extends SbkBaseController {
         return AjaxResult.success("操作成功");
     }
 
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("修改申领")
+    @PostMapping("/editShenling")
+    public AjaxResult editShenling(@RequestBody @Validated WxArchives wxArchives) {
+        wxArchives.setExamineStatus("0"); // 未审核
+        wxArchives.setIsZhifu(null); // 未支付
+        wxArchives.setOrderno(null); // 订单号
+        wxArchives.setReturnFlag(null); // 未申请退费
+        wxArchives.setExamineReturnFlag(null); // 申请退费未审核
+        wxArchives.setAddTime(null);
+
+        if (!IdcardUtil.isValidCard(wxArchives.getCardNum())) {
+            return AjaxResult.error("身份证号码格式错误");
+        }
+
+        wxArchives.setStepStatus(null);
+        wxArchives.setSource(null);
+        wxArchives.setPersonid(null);
+
+        boolean isAdult = IdcardUtil.getAgeByIdCard(wxArchives.getCardNum()) > 16;
+        wxArchives.setIsAdult(isAdult ? "0" : "1");
+
+        if (!isAdult) {
+            if (StrUtil.isBlank(wxArchives.getGuardianName())) {
+                return AjaxResult.error("监护人姓名不能为空");
+            }
+            if (StrUtil.isBlank(wxArchives.getGuardianCardNum())) {
+                return AjaxResult.error("监护人身份证号码不能为空");
+            }
+            if (!IdcardUtil.isValidCard(wxArchives.getGuardianCardNum())) {
+                return AjaxResult.error("监护人身份证号码格式错误");
+            }
+
+            int gender = IdcardUtil.getGenderByIdCard(wxArchives.getGuardianCardNum());
+            wxArchives.setDaiSex(gender == 1 ? "男" : "女");
+        }
+
+        WxInfomationImg wxInfomationImg = wxArchives.getWxInfomationImg();
+        wxInfomationImg.setPersonid(null);
+
+        smartCityService.updateArchivesAndImg(wxArchives);
+        return AjaxResult.success("操作成功");
+    }
+
     /**
-     * 获取邮寄费支付信息-申领
+     * 获取邮寄费支付信息
      */
     @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
-    @ApiOperation("获取邮寄费支付信息-申领")
-    @PostMapping("/slOrderInfo")
-    public AjaxResult slOrderInfo(@RequestBody @Validated SlOrderInfoParam slOrderInfoParam) {
+    @ApiOperation("获取邮寄费支付信息")
+    @PostMapping("/orderInfo")
+    public AjaxResult orderInfo(@RequestBody @Validated OrderInfoParam orderInfoParam) {
         Map<String, Object> result = new HashMap<>();
-
-        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
-                .eq(WxArchives::getCardNum, slOrderInfoParam.getCardNum())
-                .eq(WxArchives::getOrderno, slOrderInfoParam.getOrderno()));
-        if (wxArchives == null) {
-            return AjaxResult.error("未查询到社保卡信息");
-        }
-        if (wxArchives.getIsZhifu() == 1) {
-            return AjaxResult.error("已支付");
-        }
-
         Integer mailPrice = 20;
-        WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>()
-                .eq(WxDistrict2::getCode, wxArchives.getCountyCodeMail()));
-        if (wxDistrict2 != null) {
-            mailPrice = wxDistrict2.getMailPrice();
+        JSONObject jsonObject = new JSONObject();
+
+        String type = orderInfoParam.getType();
+        if ("shenling".equals(type)) {
+            WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
+                    .eq(WxArchives::getCardNum, orderInfoParam.getCardNum())
+                    .eq(WxArchives::getOrderno, orderInfoParam.getOrderno()));
+            if (wxArchives == null) {
+                return AjaxResult.error("未查询到社保卡信息");
+            }
+            if (wxArchives.getIsZhifu() == 1) {
+                return AjaxResult.error("已支付");
+            }
+            WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>()
+                    .eq(WxDistrict2::getCode, wxArchives.getCountyCodeMail()));
+            if (wxDistrict2 != null) {
+                mailPrice = wxDistrict2.getMailPrice();
+            }
+            jsonObject = smartCityService.putOrderinfo(wxArchives, mailPrice);
+        } else if ("buhuanka".equals(type)) {
+            WxBukaInfo wxBukaInfo = wxBukaInfoService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxBukaInfo>()
+                    .eq(WxBukaInfo::getIdcardno, orderInfoParam.getCardNum())
+                    .eq(WxBukaInfo::getOrderno, orderInfoParam.getOrderno()));
+            if (wxBukaInfo == null) {
+                return AjaxResult.error("未查询到社保卡信息");
+            }
+            if (wxBukaInfo.getIsZhifu() == 1) {
+                return AjaxResult.error("已支付");
+            }
+            WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>()
+                    .eq(WxDistrict2::getCode, wxBukaInfo.getShouZoonCode()));
+            if (wxDistrict2 != null) {
+                mailPrice = wxDistrict2.getMailPrice();
+            }
+            jsonObject = smartCityService.putOrderinfo(wxBukaInfo, mailPrice);
+        } else {
+            return AjaxResult.error("审核类型错误");
         }
 
-        JSONObject jsonObject = smartCityService.putOrderinfo(wxArchives, mailPrice);
+
         Integer status = jsonObject.getInteger("status");
         if (status == 1) {
             result.put("mailPrice", mailPrice);
@@ -240,7 +332,9 @@ public class SmartCityController extends SbkBaseController {
                 return AjaxResult.error("采集信息审核已通过");
             } else if ("2".equals(examineStatus)) {
                 if (source.equals(wxArchives.getSource())) {
-                    return new AjaxResult(201, "采集信息审核未通过");
+                    WxInfomationImg wxInfomationImg = wxInfomationImgService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxInfomationImg>().eq(WxInfomationImg::getCardNum, xbkzgjyParam.getSfzh()));
+                    wxArchives.setWxInfomationImg(wxInfomationImg);
+                    return new AjaxResult(201, "采集信息审核未通过", wxArchives);
                 } else {
                     return AjaxResult.error("请继续在首次申领渠道修改信息");
                 }

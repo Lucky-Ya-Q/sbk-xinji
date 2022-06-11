@@ -105,6 +105,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         HttpMethod.GET,
                         "/",
                         "/*.html",
+                        "/*.txt",
                         "/**/*.html",
                         "/**/*.css",
                         "/**/*.js",
