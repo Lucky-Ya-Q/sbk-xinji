@@ -464,8 +464,8 @@ public class SmartCityController extends SbkBaseController {
     @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
     @ApiOperation("邮寄物流信息")
     @PostMapping("/mailInfo")
-    public AjaxResult mailInfo(@RequestBody @Validated String wldh) {
-        return AjaxResult.success(smartCityService.selectMailInfoByWldh(wldh));
+    public AjaxResult mailInfo(@RequestBody @Validated MailInfoParam mailInfoParam) {
+        return AjaxResult.success(smartCityService.selectMailInfoByWldh(mailInfoParam.getWldh()));
     }
 
     /**
