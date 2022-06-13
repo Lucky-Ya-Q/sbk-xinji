@@ -214,37 +214,31 @@ public class SmartCityController extends SbkBaseController {
     public AjaxResult orderInfo(@RequestBody @Validated OrderInfoParam orderInfoParam) {
         Map<String, Object> result = new HashMap<>();
         Integer mailPrice = 20;
-        JSONObject jsonObject = new JSONObject();
+        JSONObject jsonObject;
 
         String type = orderInfoParam.getType();
         if ("shenling".equals(type)) {
-            WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
-                    .eq(WxArchives::getCardNum, orderInfoParam.getCardNum())
-                    .eq(WxArchives::getOrderno, orderInfoParam.getOrderno()));
+            WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getCardNum, orderInfoParam.getCardNum()).eq(WxArchives::getOrderno, orderInfoParam.getOrderno()));
             if (wxArchives == null) {
                 return AjaxResult.error("未查询到社保卡信息");
             }
             if (wxArchives.getIsZhifu() == 1) {
                 return AjaxResult.error("已支付");
             }
-            WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>()
-                    .eq(WxDistrict2::getCode, wxArchives.getCountyCodeMail()));
+            WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxArchives.getCountyCodeMail()));
             if (wxDistrict2 != null) {
                 mailPrice = wxDistrict2.getMailPrice();
             }
             jsonObject = smartCityService.putOrderinfo(wxArchives, mailPrice);
         } else if ("buhuanka".equals(type)) {
-            WxBukaInfo wxBukaInfo = wxBukaInfoService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxBukaInfo>()
-                    .eq(WxBukaInfo::getIdcardno, orderInfoParam.getCardNum())
-                    .eq(WxBukaInfo::getOrderno, orderInfoParam.getOrderno()));
+            WxBukaInfo wxBukaInfo = wxBukaInfoService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxBukaInfo>().eq(WxBukaInfo::getIdcardno, orderInfoParam.getCardNum()).eq(WxBukaInfo::getOrderno, orderInfoParam.getOrderno()));
             if (wxBukaInfo == null) {
                 return AjaxResult.error("未查询到社保卡信息");
             }
             if (wxBukaInfo.getIsZhifu() == 1) {
                 return AjaxResult.error("已支付");
             }
-            WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>()
-                    .eq(WxDistrict2::getCode, wxBukaInfo.getShouZoonCode()));
+            WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxBukaInfo.getShouZoonCode()));
             if (wxDistrict2 != null) {
                 mailPrice = wxDistrict2.getMailPrice();
             }
@@ -263,10 +257,7 @@ public class SmartCityController extends SbkBaseController {
             jsonObject.remove("error_desc");
             String content = aes.encryptBase64(jsonObject.toJSONString());
 
-            String payUrl = StrUtil.format(
-                    "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc2bd458948e845a0&redirect_uri={}&response_type=code&scope=snsapi_base&state={}&connect_redirect=1",
-                    "http://dingzhou.sjzydrj.net/index.php/home/Pay/wxpay/",
-                    content);
+            String payUrl = StrUtil.format("https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc2bd458948e845a0&redirect_uri={}&response_type=code&scope=snsapi_base&state={}&connect_redirect=1", "http://dingzhou.sjzydrj.net/index.php/home/Pay/wxpay/", content);
 
             result.put("payUrl", payUrl);
 
@@ -284,9 +275,7 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("可申请邮寄退费列表 - 微信")
     @PostMapping("/wxReturnList")
     public AjaxResult wxReturnList(@RequestBody @Validated WxReturnListParam wxReturnListParam) {
-        List<WxArchives> wxArchivesList = wxArchivesService.selectListByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
-                .eq(WxArchives::getOpenid, wxReturnListParam.getOpenId())
-                .notIn(WxArchives::getExamineStatus, 0, 2));
+        List<WxArchives> wxArchivesList = wxArchivesService.selectListByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getOpenid, wxReturnListParam.getOpenId()).notIn(WxArchives::getExamineStatus, 0, 2));
         return AjaxResult.success(wxArchivesList);
     }
 
@@ -297,9 +286,7 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("申请退邮寄费 - 微信")
     @PostMapping("/wxReturnOrder")
     public AjaxResult wxReturnOrder(@RequestBody @Validated WxReturnOrderParam wxReturnOrderParam) {
-        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
-                .eq(WxArchives::getOrderno, wxReturnOrderParam.getOrderno())
-                .notIn(WxArchives::getExamineStatus, 0, 2));
+        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getOrderno, wxReturnOrderParam.getOrderno()).notIn(WxArchives::getExamineStatus, 0, 2));
         if (wxArchives == null) {
             return AjaxResult.error("未查到满足退费条件的订单");
         }
@@ -316,11 +303,7 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("申请退邮寄费")
     @PostMapping("/returnOrder")
     public AjaxResult returnOrder(@RequestBody @Validated ReturnOrderParam returnOrderParam) {
-        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
-                .eq(WxArchives::getCardNum, returnOrderParam.getSfzh())
-                .eq(WxArchives::getName, returnOrderParam.getXm())
-                .eq(WxArchives::getPhone, returnOrderParam.getPhone())
-                .notIn(WxArchives::getExamineStatus, 0, 2));
+        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getCardNum, returnOrderParam.getSfzh()).eq(WxArchives::getName, returnOrderParam.getXm()).eq(WxArchives::getPhone, returnOrderParam.getPhone()).notIn(WxArchives::getExamineStatus, 0, 2));
         if (wxArchives == null) {
             return AjaxResult.error("未查到满足退费条件的订单");
         }
@@ -461,6 +444,42 @@ public class SmartCityController extends SbkBaseController {
         return AjaxResult.success(result);
     }
 
+    // ————————————————————————————  其他单独接口  ————————————————————————————
+
+    /**
+     * 身份证号密码校验
+     */
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("身份证号密码校验")
+    @PostMapping("/account")
+    public AjaxResult account(@RequestBody @Validated EncryptParam encryptParam) throws IOException {
+        AccountParam accountParam = JSON.parseObject(AESUtils.decrypt(encryptParam.getBody(), AESUtils.KEY), AccountParam.class);
+
+        // 社保卡基本信息查询
+        Result result = sbkService.getResult("0811014", accountParam.getUsername() + "||");
+        if (!"200".equals(result.getStatusCode())) {
+            return AjaxResult.error(result.getMessage());
+        }
+        Map<String, String> data = (Map<String, String>) result.getData();
+        String jbxxcx = ParamUtils.decrypted(SbkParamUtils.PRIVATEKEY, data.get("ReturnResult"));
+        String[] jbxxcxArr = jbxxcx.split("\\|");
+
+        // 服务密码校验
+        String fwmmjyKeyInfo = jbxxcxArr[1] + "|" + jbxxcxArr[0] + "|" + jbxxcxArr[10] + "|" + accountParam.getPassword();
+        Result fwmmjyResult = sbkService.getResult("0821021", fwmmjyKeyInfo);
+        if (!"200".equals(fwmmjyResult.getStatusCode())) {
+            return AjaxResult.error(fwmmjyResult.getMessage());
+        }
+
+        SbkUser sbkUser = new SbkUser();
+        sbkUser.setAaz500(jbxxcxArr[10]);
+        sbkUser.setAac002(jbxxcxArr[1]);
+        sbkUser.setAac003(jbxxcxArr[0]);
+
+        String encrypt = AESUtils.encrypt(JSON.toJSONString(sbkUser), AESUtils.KEY);
+        return AjaxResult.success("操作成功", encrypt);
+    }
+
     /**
      * 人员基础信息变更
      */
@@ -562,6 +581,8 @@ public class SmartCityController extends SbkBaseController {
         Result result = sbkService.getResult("0821020", keyInfo);
         return toAjax(result);
     }
+
+    // ————————————————————————————  字典相关接口  ————————————————————————————
 
     /**
      * 查询单位信息列表
