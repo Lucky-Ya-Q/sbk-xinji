@@ -29,9 +29,11 @@ import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.result.WxMpUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.*;
 
@@ -40,8 +42,6 @@ import java.util.*;
 @RestController
 @RequestMapping("/smart/city")
 public class SmartCityController extends SbkBaseController {
-    @Autowired
-    private HttpServletRequest request;
     @Autowired
     private SbkService sbkService;
     @Autowired
@@ -121,6 +121,20 @@ public class SmartCityController extends SbkBaseController {
             wxArchives.setStepStatus("9");
         }
 
+        // 减免邮寄费
+        Integer mailPrice = 20;
+        WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxArchives.getCountyCodeMail()));
+        if (wxDistrict2 != null) {
+            mailPrice = wxDistrict2.getMailPrice();
+        }
+        wxArchives.setMoneyEms(mailPrice);
+
+        WxBukaBank wxBukaBank = wxBukaBankService.getById(wxArchives.getBankid());
+        wxArchives.setNopayflagEms(wxBukaBank.getNopayflag());
+        if (wxBukaBank.getNopayflag() == 1) {
+            wxArchives.setStepStatus("9");
+        }
+
         String code = wxArchives.getCode();
         switch (code) {
             case "f54791a523474e12b7c183f17c3cbcc2":
@@ -154,7 +168,7 @@ public class SmartCityController extends SbkBaseController {
         }
 
         WxInfomationImg wxInfomationImg = wxArchives.getWxInfomationImg();
-        wxInfomationImg.setCardNum(wxArchives.getGuardianCardNum());
+        wxInfomationImg.setCardNum(wxArchives.getCardNum());
         wxInfomationImg.setPersonid(String.valueOf(wxInfomationImgService.selectPersonidByMax() + 1));
 
         smartCityService.saveArchivesAndImg(wxArchives);
@@ -176,7 +190,25 @@ public class SmartCityController extends SbkBaseController {
             return AjaxResult.error("身份证号码格式错误");
         }
 
-        wxArchives.setStepStatus(null);
+        wxArchives.setStepStatus("999");
+        if ("0".equals(wxArchives.getIsMail())) {
+            wxArchives.setStepStatus("9");
+        }
+
+        // 减免邮寄费
+        Integer mailPrice = 20;
+        WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxArchives.getCountyCodeMail()));
+        if (wxDistrict2 != null) {
+            mailPrice = wxDistrict2.getMailPrice();
+        }
+        wxArchives.setMoneyEms(mailPrice);
+
+        WxBukaBank wxBukaBank = wxBukaBankService.getById(wxArchives.getBankid());
+        wxArchives.setNopayflagEms(wxBukaBank.getNopayflag());
+        if (wxBukaBank.getNopayflag() == 1) {
+            wxArchives.setStepStatus("9");
+        }
+
         wxArchives.setSource(null);
         wxArchives.setPersonid(null);
 
@@ -199,7 +231,7 @@ public class SmartCityController extends SbkBaseController {
         }
 
         WxInfomationImg wxInfomationImg = wxArchives.getWxInfomationImg();
-        wxInfomationImg.setCardNum(wxArchives.getGuardianCardNum());
+        wxInfomationImg.setCardNum(wxArchives.getCardNum());
         wxInfomationImg.setPersonid(null);
 
         smartCityService.updateArchivesAndImg(wxArchives);
@@ -226,6 +258,8 @@ public class SmartCityController extends SbkBaseController {
             if (wxArchives.getIsZhifu() == 1) {
                 return AjaxResult.error("已支付");
             }
+            result.put("moneyEms", wxArchives.getMoneyEms());
+            result.put("nopayflagEms", wxArchives.getNopayflagEms());
             WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxArchives.getCountyCodeMail()));
             if (wxDistrict2 != null) {
                 mailPrice = wxDistrict2.getMailPrice();
@@ -239,6 +273,8 @@ public class SmartCityController extends SbkBaseController {
             if (wxBukaInfo.getIsZhifu() == 1) {
                 return AjaxResult.error("已支付");
             }
+            result.put("moneyEms", wxBukaInfo.getMoneyEms());
+            result.put("nopayflagEms", wxBukaInfo.getNopayflagEms());
             WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxBukaInfo.getShouZoonCode()));
             if (wxDistrict2 != null) {
                 mailPrice = wxDistrict2.getMailPrice();

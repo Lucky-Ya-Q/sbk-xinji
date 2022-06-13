@@ -1,8 +1,8 @@
 package com.ruoyi.sbk.domain;
 
-import java.util.Date;
-
 import lombok.Data;
+
+import java.util.Date;
 
 @Data
 public class WxBukaInfo {
@@ -335,5 +335,11 @@ public class WxBukaInfo {
      * 代办人身份证号
      */
     private String daiIdcardno;
+
+    private Integer isYewudan;
+    private Date yewudanAddtime;
+    private Integer yewudanCid;
+    private Integer moneyEms;
+    private Integer nopayflagEms;
 }
 

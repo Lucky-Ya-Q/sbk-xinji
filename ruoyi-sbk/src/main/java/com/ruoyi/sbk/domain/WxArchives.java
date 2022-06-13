@@ -399,6 +399,9 @@ public class WxArchives {
     @ApiModelProperty("银行ID")
     private Integer bankid;
 
+    private Integer moneyEms;
+    private Integer nopayflagEms;
+
     @TableField(exist = false)
     private WxInfomationImg wxInfomationImg;
 }
