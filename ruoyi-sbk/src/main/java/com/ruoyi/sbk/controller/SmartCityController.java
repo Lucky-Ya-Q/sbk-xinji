@@ -86,6 +86,7 @@ public class SmartCityController extends SbkBaseController {
     /**
      * 微信网页授权
      */
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
     @ApiOperation("微信网页授权")
     @PostMapping("/userInfo")
     public AjaxResult userInfo(@RequestBody @Validated UserInfoParam userInfoParam) throws WxErrorException {
