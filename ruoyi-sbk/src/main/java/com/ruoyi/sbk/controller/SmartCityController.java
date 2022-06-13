@@ -255,9 +255,7 @@ public class SmartCityController extends SbkBaseController {
             if (wxArchives == null) {
                 return AjaxResult.error("未查询到社保卡信息");
             }
-            if (wxArchives.getIsZhifu() == 1) {
-                return AjaxResult.error("已支付");
-            }
+            result.put("isPay", wxArchives.getIsZhifu());
             result.put("moneyEms", wxArchives.getMoneyEms());
             result.put("nopayflagEms", wxArchives.getNopayflagEms());
             WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxArchives.getCountyCodeMail()));
@@ -270,9 +268,7 @@ public class SmartCityController extends SbkBaseController {
             if (wxBukaInfo == null) {
                 return AjaxResult.error("未查询到社保卡信息");
             }
-            if (wxBukaInfo.getIsZhifu() == 1) {
-                return AjaxResult.error("已支付");
-            }
+            result.put("isPay", wxBukaInfo.getIsZhifu());
             result.put("moneyEms", wxBukaInfo.getMoneyEms());
             result.put("nopayflagEms", wxBukaInfo.getNopayflagEms());
             WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxBukaInfo.getShouZoonCode()));
@@ -293,9 +289,7 @@ public class SmartCityController extends SbkBaseController {
             jsonObject.remove("status");
             jsonObject.remove("error_desc");
             String content = aes.encryptBase64(jsonObject.toJSONString());
-
             String payUrl = StrUtil.format("https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc2bd458948e845a0&redirect_uri={}&response_type=code&scope=snsapi_base&state={}&connect_redirect=1", "http://dingzhou.sjzydrj.net/index.php/home/Pay/wxpay/", content);
-
             result.put("payUrl", payUrl);
 
             return AjaxResult.success(result);
@@ -304,6 +298,34 @@ public class SmartCityController extends SbkBaseController {
             return AjaxResult.error(errorDesc);
         }
     }
+
+    /**
+     * 查询订单是否已支付
+     */
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("查询订单是否已支付")
+    @PostMapping("/orderIsPay")
+    public AjaxResult orderIsPay(@RequestBody @Validated OrderInfoParam orderInfoParam) {
+        Map<String, Object> result = new HashMap<>();
+        String type = orderInfoParam.getType();
+        if ("shenling".equals(type)) {
+            WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getCardNum, orderInfoParam.getCardNum()).eq(WxArchives::getOrderno, orderInfoParam.getOrderno()));
+            if (wxArchives == null) {
+                return AjaxResult.error("未查询到社保卡信息");
+            }
+            result.put("isPay", wxArchives.getIsZhifu());
+        } else if ("buhuanka".equals(type)) {
+            WxBukaInfo wxBukaInfo = wxBukaInfoService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxBukaInfo>().eq(WxBukaInfo::getIdcardno, orderInfoParam.getCardNum()).eq(WxBukaInfo::getOrderno, orderInfoParam.getOrderno()));
+            if (wxBukaInfo == null) {
+                return AjaxResult.error("未查询到社保卡信息");
+            }
+            result.put("isPay", wxBukaInfo.getIsZhifu());
+        } else {
+            return AjaxResult.error("领卡类型错误");
+        }
+        return AjaxResult.success(result);
+    }
+
 
     /**
      * 可申请退邮寄费列表 - 微信
