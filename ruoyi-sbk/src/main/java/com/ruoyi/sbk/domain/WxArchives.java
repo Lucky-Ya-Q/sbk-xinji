@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 /**
@@ -397,7 +398,7 @@ public class WxArchives {
     /**
      * 银行ID
      */
-    @NotBlank(message = "银行ID不能为空")
+    @NotNull(message = "银行ID不能为空")
     @ApiModelProperty("银行ID")
     private Integer bankid;
 

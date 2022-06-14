@@ -104,10 +104,12 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("申领")
     @PostMapping("/shenling")
     public AjaxResult shenling(@RequestBody @Validated WxArchives wxArchives) {
+        Map<String, Object> result = new HashMap<>();
         wxArchives.setExamineStatus("0"); // 未审核
         wxArchives.setIsZhifu(0); // 未支付
         int time = (int) (System.currentTimeMillis() / 1000);
         wxArchives.setOrderno(time + RandomUtil.randomNumbers(4)); // 订单号
+        result.put("orderno", wxArchives.getOrderno());
         wxArchives.setReturnFlag(0); // 未申请退费
         wxArchives.setExamineReturnFlag(0); // 申请退费未审核
         wxArchives.setAddTime(new Date());
@@ -182,7 +184,7 @@ public class SmartCityController extends SbkBaseController {
         wxInfomationImg.setPersonid(String.valueOf(wxInfomationImgService.selectPersonidByMax() + 1));
 
         smartCityService.saveArchivesAndImg(wxArchives);
-        return AjaxResult.success("操作成功");
+        return AjaxResult.success(result);
     }
 
     @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
@@ -254,7 +256,7 @@ public class SmartCityController extends SbkBaseController {
         wxInfomationImg.setPersonid(null);
 
         smartCityService.updateArchivesAndImg(wxArchives);
-        return AjaxResult.success("操作成功");
+        return AjaxResult.success();
     }
 
     /**

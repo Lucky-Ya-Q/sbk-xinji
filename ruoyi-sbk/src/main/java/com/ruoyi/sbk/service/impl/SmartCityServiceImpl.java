@@ -32,12 +32,14 @@ public class SmartCityServiceImpl implements SmartCityService {
     private WxArchivesMapper wxArchivesMapper;
     @Autowired
     private WxInfomationImgMapper wxInfomationImgMapper;
+    //    private final String url = "http://dingzhou.sjzydrj.net/index.php/Home/Orderpayapi/put_orderinfo";
+    private final String url = "http://10.39.248.217:9904/orderpayapi/put_orderinfo";
 
     @Override
     public JSONObject selectMailInfoByWldh(String wldh) {
         AES aes = SecureUtil.aes("94DA411B9C39B410".getBytes());
-        String url = "http://ipps.hbwkd.cn/ipps/orderPay/api/EmsTrail/EmsTrailAction.do?actionType=getMailInfo";
-//        String url = "http://10.36.2.8:9007/emsipps/ipps/orderPay/api/EmsTrail/EmsTrailAction.do?actionType=getMailInfo";
+//        String url = "http://ipps.hbwkd.cn/ipps/orderPay/api/EmsTrail/EmsTrailAction.do?actionType=getMailInfo";
+        String url = "http://10.36.2.8:9007/emsipps/ipps/orderPay/api/EmsTrail/EmsTrailAction.do?actionType=getMailInfo";
         Map<String, Object> hashMap = new HashMap<>();
         hashMap.put("AUTH_CODE", "94D5C8EAA808A9A5E050007F01005B3C");
         hashMap.put("CUST_APPID", "wxde85bc4bf1f7629a");
@@ -74,8 +76,6 @@ public class SmartCityServiceImpl implements SmartCityService {
     @Override
     public JSONObject putOrderinfo(WxArchives wxArchives, Integer mailPrice) {
         AES aes = SecureUtil.aes("3MH0P00OPS3OOROE".getBytes());
-        String url = "http://dingzhou.sjzydrj.net/index.php/Home/Orderpayapi/put_orderinfo";
-//        String url = "http://10.39.248.217:9904/orderpayapi";
         Map<String, Object> hashMap = new HashMap<>();
         hashMap.put("auth_code", "TWXUCQSOMT48MXWWURVTWGBI5PSSNN76");
         hashMap.put("cust_appid", "wxde85bc4bf1f7629a");
@@ -103,8 +103,6 @@ public class SmartCityServiceImpl implements SmartCityService {
     @Override
     public JSONObject putOrderinfo(WxBukaInfo wxBukaInfo, Integer mailPrice) {
         AES aes = SecureUtil.aes("3MH0P00OPS3OOROE".getBytes());
-        String url = "http://dingzhou.sjzydrj.net/index.php/Home/Orderpayapi/put_orderinfo";
-//        String url = "http://10.39.248.217:9904/orderpayapi";
         Map<String, Object> hashMap = new HashMap<>();
         hashMap.put("auth_code", "TWXUCQSOMT48MXWWURVTWGBI5PSSNN76");
         hashMap.put("cust_appid", "wxde85bc4bf1f7629a");
