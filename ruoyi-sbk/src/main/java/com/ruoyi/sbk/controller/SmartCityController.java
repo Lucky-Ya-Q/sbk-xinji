@@ -355,7 +355,10 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("可申请邮寄退费列表 - 微信")
     @PostMapping("/wxReturnList")
     public AjaxResult wxReturnList(@RequestBody @Validated WxReturnListParam wxReturnListParam) {
-        List<WxArchives> wxArchivesList = wxArchivesService.selectListByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getOpenid, wxReturnListParam.getOpenId()).notIn(WxArchives::getExamineStatus, 0, 2));
+        List<WxArchives> wxArchivesList = wxArchivesService.selectListByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>()
+                .eq(WxArchives::getIsZhifu, 1)
+                .eq(WxArchives::getOpenid, wxReturnListParam.getOpenId())
+                .notIn(WxArchives::getExamineStatus, 1));
         return AjaxResult.success(wxArchivesList);
     }
 
@@ -366,7 +369,7 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("申请退邮寄费 - 微信")
     @PostMapping("/wxReturnOrder")
     public AjaxResult wxReturnOrder(@RequestBody @Validated WxReturnOrderParam wxReturnOrderParam) {
-        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getOrderno, wxReturnOrderParam.getOrderno()).notIn(WxArchives::getExamineStatus, 0, 2));
+        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getIsZhifu, 1).eq(WxArchives::getOrderno, wxReturnOrderParam.getOrderno()).notIn(WxArchives::getExamineStatus, 1));
         if (wxArchives == null) {
             return AjaxResult.error("未查到满足退费条件的订单");
         }
@@ -383,7 +386,7 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("申请退邮寄费")
     @PostMapping("/returnOrder")
     public AjaxResult returnOrder(@RequestBody @Validated ReturnOrderParam returnOrderParam) {
-        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getCardNum, returnOrderParam.getSfzh()).eq(WxArchives::getName, returnOrderParam.getXm()).eq(WxArchives::getPhone, returnOrderParam.getPhone()).notIn(WxArchives::getExamineStatus, 0, 2));
+        WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getIsZhifu, 1).eq(WxArchives::getCardNum, returnOrderParam.getSfzh()).eq(WxArchives::getName, returnOrderParam.getXm()).eq(WxArchives::getPhone, returnOrderParam.getPhone()).notIn(WxArchives::getExamineStatus, 1));
         if (wxArchives == null) {
             return AjaxResult.error("未查到满足退费条件的订单");
         }
