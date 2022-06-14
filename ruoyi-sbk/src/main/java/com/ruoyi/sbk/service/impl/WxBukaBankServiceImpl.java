@@ -9,6 +9,7 @@ import com.ruoyi.sbk.service.IWxBukaBankService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -21,6 +22,12 @@ import java.util.List;
 public class WxBukaBankServiceImpl extends ServiceImpl<WxBukaBankMapper, WxBukaBank> implements IWxBukaBankService {
     @Autowired
     private WxBukaBankMapper wxBukaBankMapper;
+
+    @Override
+    @DataSource(value = DataSourceType.SLAVE)
+    public WxBukaBank getById(Serializable id) {
+        return wxBukaBankMapper.selectById(id);
+    }
 
     /**
      * 查询银行信息列表
