@@ -12,6 +12,7 @@ import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SbkUser;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.sbk.common.SbkBaseController;
 import com.ruoyi.sbk.domain.*;
 import com.ruoyi.sbk.dto.*;
@@ -116,23 +117,32 @@ public class SmartCityController extends SbkBaseController {
             return AjaxResult.error("身份证号码格式错误");
         }
 
+        try {
+            String[] communicationAddresss = wxArchives.getCommunicationAddress().split("/");
+            log.info("校验通讯地址：{}", communicationAddresss[2]);
+        } catch (Exception e) {
+            throw new ServiceException("通讯地址格式错误");
+        }
+
         wxArchives.setStepStatus("999");
         if ("0".equals(wxArchives.getIsMail())) {
             wxArchives.setStepStatus("9");
-        }
-
-        // 减免邮寄费
-        Integer mailPrice = 20;
-        WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxArchives.getCountyCodeMail()));
-        if (wxDistrict2 != null) {
-            mailPrice = wxDistrict2.getMailPrice();
-        }
-        wxArchives.setMoneyEms(mailPrice);
-
-        WxBukaBank wxBukaBank = wxBukaBankService.getById(wxArchives.getBankid());
-        wxArchives.setNopayflagEms(wxBukaBank.getNopayflag());
-        if (wxBukaBank.getNopayflag() == 1) {
-            wxArchives.setStepStatus("9");
+        } else {
+            if (StrUtil.isBlank(wxArchives.getCountyCodeMail())) {
+                return AjaxResult.error("收件人区县编码不能为空");
+            }
+            // 减免邮寄费
+            Integer mailPrice = 20;
+            WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxArchives.getCountyCodeMail()));
+            if (wxDistrict2 != null) {
+                mailPrice = wxDistrict2.getMailPrice();
+            }
+            wxArchives.setMoneyEms(mailPrice);
+            WxBukaBank wxBukaBank = wxBukaBankService.getById(wxArchives.getBankid());
+            wxArchives.setNopayflagEms(wxBukaBank.getNopayflag());
+            if (wxBukaBank.getNopayflag() == 1) {
+                wxArchives.setStepStatus("9");
+            }
         }
 
         String code = wxArchives.getCode();
@@ -190,23 +200,32 @@ public class SmartCityController extends SbkBaseController {
             return AjaxResult.error("身份证号码格式错误");
         }
 
+        try {
+            String[] communicationAddresss = wxArchives.getCommunicationAddress().split("/");
+            log.info("校验通讯地址：{}", communicationAddresss[2]);
+        } catch (Exception e) {
+            throw new ServiceException("通讯地址格式错误");
+        }
+
         wxArchives.setStepStatus("999");
         if ("0".equals(wxArchives.getIsMail())) {
             wxArchives.setStepStatus("9");
-        }
-
-        // 减免邮寄费
-        Integer mailPrice = 20;
-        WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxArchives.getCountyCodeMail()));
-        if (wxDistrict2 != null) {
-            mailPrice = wxDistrict2.getMailPrice();
-        }
-        wxArchives.setMoneyEms(mailPrice);
-
-        WxBukaBank wxBukaBank = wxBukaBankService.getById(wxArchives.getBankid());
-        wxArchives.setNopayflagEms(wxBukaBank.getNopayflag());
-        if (wxBukaBank.getNopayflag() == 1) {
-            wxArchives.setStepStatus("9");
+        } else {
+            if (StrUtil.isBlank(wxArchives.getCountyCodeMail())) {
+                return AjaxResult.error("收件人区县编码不能为空");
+            }
+            // 减免邮寄费
+            Integer mailPrice = 20;
+            WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxArchives.getCountyCodeMail()));
+            if (wxDistrict2 != null) {
+                mailPrice = wxDistrict2.getMailPrice();
+            }
+            wxArchives.setMoneyEms(mailPrice);
+            WxBukaBank wxBukaBank = wxBukaBankService.getById(wxArchives.getBankid());
+            wxArchives.setNopayflagEms(wxBukaBank.getNopayflag());
+            if (wxBukaBank.getNopayflag() == 1) {
+                wxArchives.setStepStatus("9");
+            }
         }
 
         wxArchives.setSource(null);

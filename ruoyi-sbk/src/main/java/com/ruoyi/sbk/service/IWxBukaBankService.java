@@ -1,5 +1,6 @@
 package com.ruoyi.sbk.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ruoyi.sbk.domain.WxBukaBank;
 
@@ -12,13 +13,9 @@ import java.util.List;
  * @date 2022-03-18
  */
 public interface IWxBukaBankService extends IService<WxBukaBank> {
-    /**
-     * 查询银行信息列表
-     *
-     * @param wxBukaBank 银行信息
-     * @return 银行信息集合
-     */
-    List<WxBukaBank> selectWxBukaBankList(WxBukaBank wxBukaBank);
+    List<WxBukaBank> selectListByLambdaQueryWrapper(LambdaQueryWrapper<WxBukaBank> lambdaQueryWrapper);
+
+    WxBukaBank selectOneByLambdaQueryWrapper(LambdaQueryWrapper<WxBukaBank> lambdaQueryWrapper);
 
     List<WxBukaBank> listAll();
 }

@@ -176,6 +176,7 @@ public class WxArchives {
     /**
      * 是否邮寄 0 代表不邮寄  1代表邮寄
      */
+    @NotBlank(message = "是否邮寄不能为空")
     @ApiModelProperty("是否邮寄 0 代表不邮寄  1代表邮寄")
     private String isMail;
     @ApiModelProperty(hidden = true)
@@ -396,6 +397,7 @@ public class WxArchives {
     /**
      * 银行ID
      */
+    @NotBlank(message = "银行ID不能为空")
     @ApiModelProperty("银行ID")
     private Integer bankid;
 

@@ -342,8 +342,8 @@ public class SbkCommonController {
      */
     @ApiOperation("查询银行信息列表")
     @GetMapping("/wxBukaBank")
-    public AjaxResult wxBukaBank(WxBukaBank wxBukaBank) {
-        List<WxBukaBank> list = wxBukaBankService.selectWxBukaBankList(wxBukaBank);
+    public AjaxResult wxBukaBank() {
+        List<WxBukaBank> list = wxBukaBankService.listAll();
         return AjaxResult.success(list);
     }
 

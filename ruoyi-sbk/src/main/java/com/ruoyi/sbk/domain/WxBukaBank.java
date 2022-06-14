@@ -1,8 +1,6 @@
 package com.ruoyi.sbk.domain;
 
-import com.ruoyi.common.core.domain.BaseEntity;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.util.Date;
 
@@ -13,9 +11,7 @@ import java.util.Date;
  * @date 2022-03-18
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-public class WxBukaBank extends BaseEntity {
-    private static final long serialVersionUID = 1L;
+public class WxBukaBank {
     private Integer id;
     private String name;
     private String code;
