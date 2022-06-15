@@ -259,6 +259,73 @@ public class SmartCityController extends SbkBaseController {
         return AjaxResult.success();
     }
 
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("补换卡")
+    @PostMapping("/buhuanka")
+    public AjaxResult buhuanka(@RequestBody @Validated WxBukaInfo wxBukaInfo) {
+        Map<String, Object> result = new HashMap<>();
+        wxBukaInfo.setExamineStatus(0); // 未审核
+        wxBukaInfo.setIsZhifu(0); // 未支付
+        int time = (int) (System.currentTimeMillis() / 1000);
+        wxBukaInfo.setOrderno(time + RandomUtil.randomNumbers(4)); // 订单号
+        result.put("orderno", wxBukaInfo.getOrderno());
+        wxBukaInfo.setAddTime(new Date());
+
+        if (!IdcardUtil.isValidCard(wxBukaInfo.getIdcardno())) {
+            return AjaxResult.error("身份证号码格式错误");
+        }
+
+        // 减免邮寄费
+        Integer mailPrice = 20;
+        WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxBukaInfo.getShouZoonCode()));
+        if (wxDistrict2 != null) {
+            mailPrice = wxDistrict2.getMailPrice();
+        }
+        wxBukaInfo.setMoneyEms(mailPrice);
+        WxBukaBank wxBukaBank = wxBukaBankService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxBukaBank>()
+                .eq(WxBukaBank::getCode, wxBukaInfo.getNewBank()));
+        wxBukaInfo.setNopayflagEms(wxBukaBank.getNopayflag());
+        if (wxBukaBank.getNopayflag() == 1) {
+            wxBukaInfo.setStepStatus(9);
+        }
+
+        String code = wxBukaInfo.getCode();
+        switch (code) {
+            case "f54791a523474e12b7c183f17c3cbcc2":
+                wxBukaInfo.setSource(4);
+                break;
+            case "f1a04d853c2f8212210267ebbda5eadb":
+                wxBukaInfo.setSource(1);
+                break;
+        }
+
+        boolean isAdult = IdcardUtil.getAgeByIdCard(wxBukaInfo.getIdcardno()) > 16;
+        wxBukaInfo.setFlag(isAdult ? 1 : 2);
+
+        if (!isAdult) {
+            if (StrUtil.isBlank(wxBukaInfo.getDaiName())) {
+                return AjaxResult.error("监护人姓名不能为空");
+            }
+            if (StrUtil.isBlank(wxBukaInfo.getDaiIdcardno())) {
+                return AjaxResult.error("监护人身份证号码不能为空");
+            }
+            if (!IdcardUtil.isValidCard(wxBukaInfo.getDaiIdcardno())) {
+                return AjaxResult.error("监护人身份证号码格式错误");
+            }
+        }
+
+        smartCityService.saveBukaInfoAndImg(wxBukaInfo);
+        return AjaxResult.success(result);
+    }
+
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("修改补换卡")
+    @PostMapping("/editBuhuanka")
+    public AjaxResult editBuhuanka(@RequestBody @Validated WxBukaInfo wxBukaInfo) {
+        smartCityService.updateBukaInfoAndImg(wxBukaInfo);
+        return AjaxResult.success();
+    }
+
     /**
      * 获取邮寄费支付信息
      */

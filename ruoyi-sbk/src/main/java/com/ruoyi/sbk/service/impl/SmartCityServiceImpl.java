@@ -13,6 +13,8 @@ import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.sbk.domain.WxArchives;
 import com.ruoyi.sbk.domain.WxBukaInfo;
 import com.ruoyi.sbk.mapper.WxArchivesMapper;
+import com.ruoyi.sbk.mapper.WxBukaInfoImgMapper;
+import com.ruoyi.sbk.mapper.WxBukaInfoMapper;
 import com.ruoyi.sbk.mapper.WxInfomationImgMapper;
 import com.ruoyi.sbk.service.SmartCityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,10 @@ public class SmartCityServiceImpl implements SmartCityService {
     private RestTemplate restTemplate;
     @Autowired
     private WxArchivesMapper wxArchivesMapper;
+    @Autowired
+    private WxBukaInfoMapper wxBukaInfoMapper;
+    @Autowired
+    private WxBukaInfoImgMapper wxBukaInfoImgMapper;
     @Autowired
     private WxInfomationImgMapper wxInfomationImgMapper;
     //    private final String url = "http://dingzhou.sjzydrj.net/index.php/Home/Orderpayapi/put_orderinfo";
@@ -57,7 +63,7 @@ public class SmartCityServiceImpl implements SmartCityService {
     @Transactional
     @DataSource(value = DataSourceType.SLAVE)
     public void saveArchivesAndImg(WxArchives wxArchives) {
-        Long count = wxArchivesMapper.selectCount(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getCardNum, wxArchives.getCardNum()).eq(WxArchives::getName, wxArchives.getName()));
+        Long count = wxArchivesMapper.selectCount(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getCardNum, wxArchives.getCardNum()));
         if (count > 0) {
             throw new ServiceException("采集信息已存在");
         }
@@ -124,5 +130,27 @@ public class SmartCityServiceImpl implements SmartCityService {
         }
         result = aes.decryptStr(result.replaceAll("\"", ""));
         return JSON.parseObject(result);
+    }
+
+    @Override
+    @Transactional
+    @DataSource(value = DataSourceType.SLAVE)
+    public void saveBukaInfoAndImg(WxBukaInfo wxBukaInfo) {
+        Long count = wxBukaInfoMapper.selectCount(new LambdaQueryWrapper<WxBukaInfo>()
+                .eq(WxBukaInfo::getIdcardno, wxBukaInfo.getIdcardno())
+                .eq(WxBukaInfo::getExamineStatus, 0));
+        if (count > 0) {
+            throw new ServiceException("采集信息已存在");
+        }
+        wxBukaInfoMapper.insert(wxBukaInfo);
+        wxBukaInfoImgMapper.insert(wxBukaInfo.getWxBukaInfoImg());
+    }
+
+    @Override
+    @Transactional
+    @DataSource(value = DataSourceType.SLAVE)
+    public void updateBukaInfoAndImg(WxBukaInfo wxBukaInfo) {
+        wxBukaInfoMapper.updateById(wxBukaInfo);
+        wxBukaInfoImgMapper.updateById(wxBukaInfo.getWxBukaInfoImg());
     }
 }

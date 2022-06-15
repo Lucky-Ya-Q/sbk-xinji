@@ -19,7 +19,6 @@ import java.util.Date;
 public class WxArchives {
     @TableField(exist = false)
     private String code;
-    private static final long serialVersionUID = 1L;
     private Long id;
 
     /**

@@ -1,14 +1,15 @@
 package com.ruoyi.sbk.domain;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.util.Date;
 
 @Data
 public class WxBukaInfo {
-    /**
-     *
-     */
+    @TableField(exist = false)
+    private String code;
+
     private Integer id;
 
     /**
@@ -341,5 +342,8 @@ public class WxBukaInfo {
     private Integer yewudanCid;
     private Integer moneyEms;
     private Integer nopayflagEms;
+
+    @TableField(exist = false)
+    private WxBukaInfoImg wxBukaInfoImg;
 }
 
