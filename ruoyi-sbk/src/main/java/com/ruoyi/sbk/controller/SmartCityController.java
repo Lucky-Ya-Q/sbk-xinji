@@ -376,6 +376,30 @@ public class SmartCityController extends SbkBaseController {
         return AjaxResult.success();
     }
 
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("取消补换卡申请")
+    @PostMapping("/closeBuhuanka")
+    public AjaxResult closeBuhuanka(@RequestBody @Validated CloseBuhuanka closeBuhuanka) {
+        LambdaQueryWrapper<WxBukaInfo> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(WxBukaInfo::getOrderno, closeBuhuanka.getOrderno());
+        WxBukaInfo wxBukaInfo = wxBukaInfoService.selectOneByLambdaQueryWrapper(queryWrapper);
+        if (wxBukaInfo == null) {
+            return AjaxResult.error("补换卡信息不存在");
+        }
+        if (wxBukaInfo.getExamineStatus() == 1) {
+            return AjaxResult.error("补换卡信息审核通过，不允许撤销");
+        }
+
+        if (wxBukaInfo.getStepStatus() != -3 && wxBukaInfo.getStepStatus() != 9) {
+            return AjaxResult.error("补换卡信息状态异常，不允许撤销");
+        }
+        wxBukaInfo.setStepStatus(-1);
+        wxBukaInfo.setReturnReason(closeBuhuanka.getReason());
+        wxBukaInfo.setReturnAddtime(new Date());
+        wxBukaInfoService.updateById(wxBukaInfo);
+        return AjaxResult.success();
+    }
+
     /**
      * 获取邮寄费支付信息
      */
@@ -493,6 +517,7 @@ public class SmartCityController extends SbkBaseController {
         wxArchives.setReturnFlag(1);
         wxArchives.setReturnReason("申请合并邮寄");
         wxArchives.setReturnTime(new Date());
+        wxArchivesService.updateById(wxArchives);
         return AjaxResult.success();
     }
 
@@ -510,6 +535,7 @@ public class SmartCityController extends SbkBaseController {
         wxArchives.setReturnFlag(1);
         wxArchives.setReturnReason("申请合并邮寄");
         wxArchives.setReturnTime(new Date());
+        wxArchivesService.updateById(wxArchives);
         return AjaxResult.success();
     }
 

@@ -2,6 +2,7 @@ package com.ruoyi.sbk.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.ruoyi.common.annotation.DataSource;
 import com.ruoyi.common.enums.DataSourceType;
 import com.ruoyi.sbk.domain.WxBukaInfo;
@@ -27,5 +28,11 @@ public class WxBukaInfoServiceImpl extends ServiceImpl<WxBukaInfoMapper, WxBukaI
     @DataSource(value = DataSourceType.SLAVE)
     public WxBukaInfo selectOneByLambdaQueryWrapper(LambdaQueryWrapper<WxBukaInfo> lambdaQueryWrapper) {
         return wxBukaInfoMapper.selectOne(lambdaQueryWrapper.last("limit 1"));
+    }
+
+    @Override
+    @DataSource(value = DataSourceType.SLAVE)
+    public boolean updateById(WxBukaInfo entity) {
+        return SqlHelper.retBool(wxBukaInfoMapper.updateById(entity));
     }
 }

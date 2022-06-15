@@ -3,6 +3,7 @@ package com.ruoyi.sbk.service.impl;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.ruoyi.common.annotation.DataSource;
 import com.ruoyi.common.enums.DataSourceType;
 import com.ruoyi.common.exception.ServiceException;
@@ -40,6 +41,12 @@ public class WxArchivesServiceImpl extends ServiceImpl<WxArchivesMapper, WxArchi
     @DataSource(value = DataSourceType.SLAVE)
     public WxArchives selectOneByLambdaQueryWrapper(LambdaQueryWrapper<WxArchives> lambdaQueryWrapper) {
         return wxArchivesMapper.selectOne(lambdaQueryWrapper.last("limit 1"));
+    }
+
+    @Override
+    @DataSource(value = DataSourceType.SLAVE)
+    public boolean updateById(WxArchives entity) {
+        return SqlHelper.retBool(wxArchivesMapper.updateById(entity));
     }
 
     @Override
