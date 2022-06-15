@@ -584,7 +584,7 @@ public class SmartCityController extends SbkBaseController {
     @PostMapping("/jbxxcx")
     public AjaxResult jbxxcx(@RequestBody @Validated EncryptParam encryptParam) throws IOException {
         SbkUser sbkUser = JSON.parseObject(AESUtils.decrypt(encryptParam.getBody(), AESUtils.KEY), SbkUser.class);
-        // 智慧城市基本信息查询
+        // 社保卡基本信息查询
         Result result = sbkService.getResult("0811014", sbkUser.getAac002() + "||");
         if (!"200".equals(result.getStatusCode())) {
             return AjaxResult.error(result.getMessage());
@@ -657,12 +657,24 @@ public class SmartCityController extends SbkBaseController {
     @Log(title = "电子社保卡", businessType = BusinessType.FWMMXG)
     @ApiOperation("服务密码修改")
     @PostMapping("/fwmmxg")
-    public AjaxResult fwmmxg(@RequestBody @Validated EncryptParam encryptParam) {
+    public AjaxResult fwmmxg(@RequestBody @Validated EncryptParam encryptParam) throws IOException {
         FwmmxgParam fwmmxgParam = JSON.parseObject(AESUtils.decrypt(encryptParam.getBody(), AESUtils.KEY), FwmmxgParam.class);
+        // 社保卡基本信息查询
+        Result result = sbkService.getResult("0811014", fwmmxgParam.getAac002() + "||");
+        if (!"200".equals(result.getStatusCode())) {
+            return AjaxResult.error(result.getMessage());
+        }
+        Map<String, String> data = (Map<String, String>) result.getData();
+        String jbxxcx = ParamUtils.decrypted(SbkParamUtils.PRIVATEKEY, data.get("ReturnResult"));
+        String[] jbxxcxArr = jbxxcx.split("\\|");
+
+        fwmmxgParam.setAaz500(jbxxcxArr[10]);
+        fwmmxgParam.setAac002(jbxxcxArr[1]);
+        fwmmxgParam.setAac003(jbxxcxArr[0]);
         // 服务密码修改
         String keyInfo = fwmmxgParam.getAac002() + "|" + fwmmxgParam.getAac003() + "|" + fwmmxgParam.getAaz500() + "|" + fwmmxgParam.getOldPassword() + "|" + fwmmxgParam.getNewPassword();
-        Result result = sbkService.getResult("0821020", keyInfo);
-        return toAjax(result);
+        Result fwmmxgResult = sbkService.getResult("0821020", keyInfo);
+        return toAjax(fwmmxgResult);
     }
 
     // ————————————————————————————  字典相关接口  ————————————————————————————
