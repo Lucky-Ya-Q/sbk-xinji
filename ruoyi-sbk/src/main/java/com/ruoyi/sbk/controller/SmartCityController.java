@@ -275,6 +275,7 @@ public class SmartCityController extends SbkBaseController {
             return AjaxResult.error("身份证号码格式错误");
         }
 
+        wxBukaInfo.setStepStatus(999);
         // 减免邮寄费
         Integer mailPrice = 20;
         WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxBukaInfo.getShouZoonCode()));
@@ -314,6 +315,10 @@ public class SmartCityController extends SbkBaseController {
             }
         }
 
+        WxBukaInfoImg wxBukaInfoImg = wxBukaInfo.getWxBukaInfoImg();
+        wxBukaInfoImg.setIdcardno(wxBukaInfo.getIdcardno());
+        wxBukaInfoImg.setOrderno(wxBukaInfo.getOrderno());
+        wxBukaInfoImg.setAddTime(new Date());
         smartCityService.saveBukaInfoAndImg(wxBukaInfo);
         return AjaxResult.success(result);
     }
@@ -322,6 +327,51 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("修改补换卡")
     @PostMapping("/editBuhuanka")
     public AjaxResult editBuhuanka(@RequestBody @Validated WxBukaInfo wxBukaInfo) {
+        wxBukaInfo.setExamineStatus(0); // 未审核
+        wxBukaInfo.setIsZhifu(null); // 未支付
+        wxBukaInfo.setOrderno(null); // 订单号
+        wxBukaInfo.setAddTime(null);
+
+        if (!IdcardUtil.isValidCard(wxBukaInfo.getIdcardno())) {
+            return AjaxResult.error("身份证号码格式错误");
+        }
+
+        wxBukaInfo.setStepStatus(999);
+        // 减免邮寄费
+        Integer mailPrice = 20;
+        WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxBukaInfo.getShouZoonCode()));
+        if (wxDistrict2 != null) {
+            mailPrice = wxDistrict2.getMailPrice();
+        }
+        wxBukaInfo.setMoneyEms(mailPrice);
+        WxBukaBank wxBukaBank = wxBukaBankService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxBukaBank>()
+                .eq(WxBukaBank::getCode, wxBukaInfo.getNewBank()));
+        wxBukaInfo.setNopayflagEms(wxBukaBank.getNopayflag());
+        if (wxBukaBank.getNopayflag() == 1) {
+            wxBukaInfo.setStepStatus(9);
+        }
+
+        wxBukaInfo.setSource(null);
+
+        boolean isAdult = IdcardUtil.getAgeByIdCard(wxBukaInfo.getIdcardno()) > 16;
+        wxBukaInfo.setFlag(isAdult ? 1 : 2);
+
+        if (!isAdult) {
+            if (StrUtil.isBlank(wxBukaInfo.getDaiName())) {
+                return AjaxResult.error("监护人姓名不能为空");
+            }
+            if (StrUtil.isBlank(wxBukaInfo.getDaiIdcardno())) {
+                return AjaxResult.error("监护人身份证号码不能为空");
+            }
+            if (!IdcardUtil.isValidCard(wxBukaInfo.getDaiIdcardno())) {
+                return AjaxResult.error("监护人身份证号码格式错误");
+            }
+        }
+
+        WxBukaInfoImg wxBukaInfoImg = wxBukaInfo.getWxBukaInfoImg();
+        wxBukaInfoImg.setIdcardno(wxBukaInfo.getIdcardno());
+        wxBukaInfoImg.setOrderno(null);
+        wxBukaInfoImg.setAddTime(null);
         smartCityService.updateBukaInfoAndImg(wxBukaInfo);
         return AjaxResult.success();
     }
