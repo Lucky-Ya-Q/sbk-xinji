@@ -1,5 +1,6 @@
 package com.ruoyi.sbk.controller;
 
+import cn.hutool.core.net.URLEncoder;
 import cn.hutool.core.util.IdcardUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Slf4j
@@ -459,7 +461,7 @@ public class SmartCityController extends SbkBaseController {
             jsonObject.remove("status");
             jsonObject.remove("error_desc");
             String content = aes.encryptBase64(jsonObject.toJSONString());
-            String payUrl = StrUtil.format("https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc2bd458948e845a0&redirect_uri={}&response_type=code&scope=snsapi_base&state={}&connect_redirect=1", "http://dingzhou.sjzydrj.net/index.php/home/Pay/wxpay/", content);
+            String payUrl = StrUtil.format("https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxc2bd458948e845a0&redirect_uri={}&response_type=code&scope=snsapi_base&state={}&connect_redirect=1", "http://dingzhou.sjzydrj.net/index.php/home/Pay/wxpay/", URLEncoder.ALL.encode(content, StandardCharsets.UTF_8));
             result.put("payUrl", payUrl);
 
             return AjaxResult.success(result);
@@ -707,7 +709,10 @@ public class SmartCityController extends SbkBaseController {
             if (wxArchives == null) {
                 return AjaxResult.error("未查到申领数据");
             }
-            Integer examineStatus = Integer.valueOf(wxArchives.getExamineStatus());
+            int examineStatus = Integer.parseInt(wxArchives.getExamineStatus());
+            if (examineStatus == 999) {
+                return AjaxResult.error("请完善采集信息");
+            }
             result.put("examineStatus", examineStatus); // 审核时间
             result.put("examineTime", wxArchives.getExamineTime()); // 审核时间
             result.put("rejectReason", wxArchives.getReason()); // 驳回原因
@@ -717,6 +722,9 @@ public class SmartCityController extends SbkBaseController {
                 return AjaxResult.error("未查到补换卡数据");
             }
             Integer examineStatus = wxBukaInfo.getExamineStatus();
+            if (examineStatus == 999) {
+                return AjaxResult.error("请完善采集信息");
+            }
             result.put("examineStatus", examineStatus); // 审核时间
             result.put("examineTime", wxBukaInfo.getExamineTime()); // 审核时间
             result.put("rejectReason", wxBukaInfo.getRejectReason()); // 驳回原因
