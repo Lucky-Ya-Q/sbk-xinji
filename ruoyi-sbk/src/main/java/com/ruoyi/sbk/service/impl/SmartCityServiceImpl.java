@@ -63,9 +63,18 @@ public class SmartCityServiceImpl implements SmartCityService {
     @Transactional
     @DataSource(value = DataSourceType.SLAVE)
     public void saveArchivesAndImg(WxArchives wxArchives) {
-        Long count = wxArchivesMapper.selectCount(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getCardNum, wxArchives.getCardNum()));
+        LambdaQueryWrapper<WxArchives> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(WxArchives::getCardNum, wxArchives.getCardNum());
+//        queryWrapper.eq(WxArchives::getExamineStatus, "0");
+        Long count = wxArchivesMapper.selectCount(queryWrapper);
         if (count > 0) {
             throw new ServiceException("采集信息已存在");
+//            LambdaUpdateWrapper<WxArchives> wxArchivesLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+//            wxArchivesLambdaUpdateWrapper.eq(WxArchives::getCardNum, wxArchives.getCardNum());
+//            wxArchivesMapper.update(wxArchives, wxArchivesLambdaUpdateWrapper);
+//            LambdaUpdateWrapper<WxInfomationImg> wxInfomationImgLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+//            wxInfomationImgLambdaUpdateWrapper.eq(WxInfomationImg::getCardNum, wxArchives.getCardNum());
+//            wxInfomationImgMapper.update(wxArchives.getWxInfomationImg(), wxInfomationImgLambdaUpdateWrapper);
         }
         wxArchivesMapper.insert(wxArchives);
         wxInfomationImgMapper.insert(wxArchives.getWxInfomationImg());
@@ -136,11 +145,19 @@ public class SmartCityServiceImpl implements SmartCityService {
     @Transactional
     @DataSource(value = DataSourceType.SLAVE)
     public void saveBukaInfoAndImg(WxBukaInfo wxBukaInfo) {
-        Long count = wxBukaInfoMapper.selectCount(new LambdaQueryWrapper<WxBukaInfo>()
-                .eq(WxBukaInfo::getIdcardno, wxBukaInfo.getIdcardno())
-                .eq(WxBukaInfo::getExamineStatus, 0));
+        LambdaQueryWrapper<WxBukaInfo> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(WxBukaInfo::getIdcardno, wxBukaInfo.getIdcardno());
+        queryWrapper.eq(WxBukaInfo::getExamineStatus, 0);
+        Long count = wxBukaInfoMapper.selectCount(queryWrapper);
         if (count > 0) {
             throw new ServiceException("采集信息已存在");
+//            WxBukaInfo wxBukaInfo1 = wxBukaInfoMapper.selectOne(queryWrapper);
+//            LambdaUpdateWrapper<WxBukaInfo> wxBukaInfoLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+//            wxBukaInfoLambdaUpdateWrapper.eq(WxBukaInfo::getOrderno, wxBukaInfo1.getOrderno());
+//            wxBukaInfoMapper.update(wxBukaInfo, wxBukaInfoLambdaUpdateWrapper);
+//            LambdaUpdateWrapper<WxBukaInfoImg> wxBukaInfoImgLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+//            wxBukaInfoImgLambdaUpdateWrapper.eq(WxBukaInfoImg::getOrderno, wxBukaInfo1.getOrderno());
+//            wxBukaInfoImgMapper.update(wxBukaInfo.getWxBukaInfoImg(), wxBukaInfoImgLambdaUpdateWrapper);
         }
         wxBukaInfoMapper.insert(wxBukaInfo);
         wxBukaInfoImgMapper.insert(wxBukaInfo.getWxBukaInfoImg());

@@ -50,6 +50,8 @@ public class SmartCityController extends SbkBaseController {
     @Autowired
     private IWxBukaInfoService wxBukaInfoService;
     @Autowired
+    private IWxBukaInfoImgService wxBukaInfoImgService;
+    @Autowired
     private IWxInfomationImgService wxInfomationImgService;
     @Autowired
     private SmartCityService smartCityService;
@@ -105,7 +107,6 @@ public class SmartCityController extends SbkBaseController {
     @PostMapping("/shenling")
     public AjaxResult shenling(@RequestBody @Validated WxArchives wxArchives) {
         Map<String, Object> result = new HashMap<>();
-        wxArchives.setExamineStatus("0"); // 未审核
         wxArchives.setIsZhifu(0); // 未支付
         int time = (int) (System.currentTimeMillis() / 1000);
         wxArchives.setOrderno(time + RandomUtil.randomNumbers(4)); // 订单号
@@ -127,8 +128,10 @@ public class SmartCityController extends SbkBaseController {
         }
 
         wxArchives.setStepStatus("999");
+        wxArchives.setExamineStatus("999");
         if ("0".equals(wxArchives.getIsMail())) {
             wxArchives.setStepStatus("9");
+            wxArchives.setExamineStatus("0");
         } else {
             if (StrUtil.isBlank(wxArchives.getCountyCodeMail())) {
                 return AjaxResult.error("收件人区县编码不能为空");
@@ -144,6 +147,7 @@ public class SmartCityController extends SbkBaseController {
             wxArchives.setNopayflagEms(wxBukaBank.getNopayflag());
             if (wxBukaBank.getNopayflag() == 1) {
                 wxArchives.setStepStatus("9");
+                wxArchives.setExamineStatus("0");
             }
         }
 
@@ -191,7 +195,6 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("修改申领")
     @PostMapping("/editShenling")
     public AjaxResult editShenling(@RequestBody @Validated WxArchives wxArchives) {
-        wxArchives.setExamineStatus("0"); // 未审核
         wxArchives.setIsZhifu(null); // 未支付
         wxArchives.setOrderno(null); // 订单号
         wxArchives.setReturnFlag(null); // 未申请退费
@@ -210,8 +213,10 @@ public class SmartCityController extends SbkBaseController {
         }
 
         wxArchives.setStepStatus("999");
+        wxArchives.setExamineStatus("999");
         if ("0".equals(wxArchives.getIsMail())) {
             wxArchives.setStepStatus("9");
+            wxArchives.setExamineStatus("0");
         } else {
             if (StrUtil.isBlank(wxArchives.getCountyCodeMail())) {
                 return AjaxResult.error("收件人区县编码不能为空");
@@ -227,6 +232,7 @@ public class SmartCityController extends SbkBaseController {
             wxArchives.setNopayflagEms(wxBukaBank.getNopayflag());
             if (wxBukaBank.getNopayflag() == 1) {
                 wxArchives.setStepStatus("9");
+                wxArchives.setExamineStatus("0");
             }
         }
 
@@ -264,7 +270,6 @@ public class SmartCityController extends SbkBaseController {
     @PostMapping("/buhuanka")
     public AjaxResult buhuanka(@RequestBody @Validated WxBukaInfo wxBukaInfo) {
         Map<String, Object> result = new HashMap<>();
-        wxBukaInfo.setExamineStatus(0); // 未审核
         wxBukaInfo.setIsZhifu(0); // 未支付
         int time = (int) (System.currentTimeMillis() / 1000);
         wxBukaInfo.setOrderno(time + RandomUtil.randomNumbers(4)); // 订单号
@@ -276,6 +281,7 @@ public class SmartCityController extends SbkBaseController {
         }
 
         wxBukaInfo.setStepStatus(999);
+        wxBukaInfo.setExamineStatus(999);
         // 减免邮寄费
         Integer mailPrice = 20;
         WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxBukaInfo.getShouZoonCode()));
@@ -288,6 +294,7 @@ public class SmartCityController extends SbkBaseController {
         wxBukaInfo.setNopayflagEms(wxBukaBank.getNopayflag());
         if (wxBukaBank.getNopayflag() == 1) {
             wxBukaInfo.setStepStatus(9);
+            wxBukaInfo.setExamineStatus(0);
         }
 
         String code = wxBukaInfo.getCode();
@@ -327,7 +334,6 @@ public class SmartCityController extends SbkBaseController {
     @ApiOperation("修改补换卡")
     @PostMapping("/editBuhuanka")
     public AjaxResult editBuhuanka(@RequestBody @Validated WxBukaInfo wxBukaInfo) {
-        wxBukaInfo.setExamineStatus(0); // 未审核
         wxBukaInfo.setIsZhifu(null); // 未支付
         wxBukaInfo.setOrderno(null); // 订单号
         wxBukaInfo.setAddTime(null);
@@ -337,6 +343,7 @@ public class SmartCityController extends SbkBaseController {
         }
 
         wxBukaInfo.setStepStatus(999);
+        wxBukaInfo.setExamineStatus(999);
         // 减免邮寄费
         Integer mailPrice = 20;
         WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxBukaInfo.getShouZoonCode()));
@@ -349,6 +356,7 @@ public class SmartCityController extends SbkBaseController {
         wxBukaInfo.setNopayflagEms(wxBukaBank.getNopayflag());
         if (wxBukaBank.getNopayflag() == 1) {
             wxBukaInfo.setStepStatus(9);
+            wxBukaInfo.setExamineStatus(0);
         }
 
         wxBukaInfo.setSource(null);
@@ -590,6 +598,8 @@ public class SmartCityController extends SbkBaseController {
 
         WxArchives wxArchives = wxArchivesService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxArchives>().eq(WxArchives::getCardNum, xbkzgjyParam.getSfzh()).eq(WxArchives::getName, xbkzgjyParam.getXm()));
         if (wxArchives != null) {
+            WxInfomationImg wxInfomationImg = wxInfomationImgService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxInfomationImg>().eq(WxInfomationImg::getCardNum, xbkzgjyParam.getSfzh()));
+            wxArchives.setWxInfomationImg(wxInfomationImg);
             // 审核状态：0代表未审核 1代表审核通过 2代表审核未通过
             String examineStatus = wxArchives.getExamineStatus();
             if ("0".equals(examineStatus)) {
@@ -598,9 +608,56 @@ public class SmartCityController extends SbkBaseController {
                 return AjaxResult.error("采集信息审核已通过");
             } else if ("2".equals(examineStatus)) {
                 if (source.equals(wxArchives.getSource())) {
-                    WxInfomationImg wxInfomationImg = wxInfomationImgService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxInfomationImg>().eq(WxInfomationImg::getCardNum, xbkzgjyParam.getSfzh()));
-                    wxArchives.setWxInfomationImg(wxInfomationImg);
                     return new AjaxResult(201, "采集信息审核未通过", wxArchives);
+                } else {
+                    return AjaxResult.error("请继续在首次申领渠道修改信息");
+                }
+            } else if ("999".equals(examineStatus)) {
+                if (source.equals(wxArchives.getSource())) {
+                    return new AjaxResult(201, "请继续填写采集信息", wxArchives);
+                } else {
+                    return AjaxResult.error("请继续在首次申领渠道修改信息");
+                }
+            }
+        }
+        return AjaxResult.success("您可以新采集信息");
+    }
+
+    /**
+     * 补换卡数据回显
+     */
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("补换卡数据回显")
+    @PostMapping("/bhksjhx")
+    public AjaxResult bhksjhx(@RequestBody @Validated BhksjhxParam bhksjhxParam) {
+        String code = bhksjhxParam.getCode();
+        int source = 0;
+        switch (code) {
+            case "f54791a523474e12b7c183f17c3cbcc2":
+                source = 4;
+                break;
+            case "f1a04d853c2f8212210267ebbda5eadb":
+                source = 1;
+                break;
+        }
+
+        WxBukaInfo wxBukaInfo = wxBukaInfoService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxBukaInfo>().eq(WxBukaInfo::getIdcardno, bhksjhxParam.getSfzh()).in(WxBukaInfo::getExamineStatus, 0, 2, 999));
+        if (wxBukaInfo != null) {
+            WxBukaInfoImg wxBukaInfoImg = wxBukaInfoImgService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxBukaInfoImg>().eq(WxBukaInfoImg::getOrderno, wxBukaInfo.getOrderno()));
+            wxBukaInfo.setWxBukaInfoImg(wxBukaInfoImg);
+            // 审核状态：0代表未审核 1代表审核通过 2代表审核未通过
+            String examineStatus = String.valueOf(wxBukaInfo.getExamineStatus());
+            if ("0".equals(examineStatus)) {
+                return AjaxResult.error("采集信息审核中");
+            } else if ("2".equals(examineStatus)) {
+                if (source == wxBukaInfo.getSource()) {
+                    return new AjaxResult(201, "采集信息审核未通过", wxBukaInfo);
+                } else {
+                    return AjaxResult.error("请继续在首次申领渠道修改信息");
+                }
+            } else if ("999".equals(examineStatus)) {
+                if (source == wxBukaInfo.getSource()) {
+                    return new AjaxResult(201, "请继续填写采集信息", wxBukaInfo);
                 } else {
                     return AjaxResult.error("请继续在首次申领渠道修改信息");
                 }
@@ -755,16 +812,16 @@ public class SmartCityController extends SbkBaseController {
     /**
      * 注销
      */
-    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
-    @ApiOperation("注销")
-    @PostMapping("/zx")
-    public AjaxResult zx(@RequestBody @Validated EncryptParam encryptParam) {
-        SbkUser sbkUser = JSON.parseObject(AESUtils.decrypt(encryptParam.getBody(), AESUtils.KEY), SbkUser.class);
-        // 注销
-        String keyInfo = sbkUser.getAac002() + "|" + sbkUser.getAac003() + "|" + sbkUser.getAaz500();
-        Result result = sbkService.getResult("0821018", keyInfo);
-        return toAjax(result);
-    }
+//    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+//    @ApiOperation("注销")
+//    @PostMapping("/zx")
+//    public AjaxResult zx(@RequestBody @Validated EncryptParam encryptParam) {
+//        SbkUser sbkUser = JSON.parseObject(AESUtils.decrypt(encryptParam.getBody(), AESUtils.KEY), SbkUser.class);
+//        // 注销
+//        String keyInfo = sbkUser.getAac002() + "|" + sbkUser.getAac003() + "|" + sbkUser.getAaz500();
+//        Result result = sbkService.getResult("0821018", keyInfo);
+//        return toAjax(result);
+//    }
 
     /**
      * 正式挂失
