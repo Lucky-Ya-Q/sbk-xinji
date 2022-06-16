@@ -130,10 +130,11 @@ public class SmartCityController extends SbkBaseController {
         }
 
         wxArchives.setStepStatus("999");
-        wxArchives.setExamineStatus("999");
+//        wxArchives.setExamineStatus("999");
+        wxArchives.setExamineStatus("0");
         if ("0".equals(wxArchives.getIsMail())) {
             wxArchives.setStepStatus("9");
-            wxArchives.setExamineStatus("0");
+//            wxArchives.setExamineStatus("0");
         } else {
             if (StrUtil.isBlank(wxArchives.getCountyCodeMail())) {
                 return AjaxResult.error("收件人区县编码不能为空");
@@ -149,7 +150,9 @@ public class SmartCityController extends SbkBaseController {
             wxArchives.setNopayflagEms(wxBukaBank.getNopayflag());
             if (wxBukaBank.getNopayflag() == 1) {
                 wxArchives.setStepStatus("9");
-                wxArchives.setExamineStatus("0");
+//                wxArchives.setExamineStatus("0");
+            } else {
+//                wxArchives.setExamineStatus("0");
             }
         }
 
@@ -215,10 +218,11 @@ public class SmartCityController extends SbkBaseController {
         }
 
         wxArchives.setStepStatus("999");
-        wxArchives.setExamineStatus("999");
+//        wxArchives.setExamineStatus("999");
+        wxArchives.setExamineStatus("0");
         if ("0".equals(wxArchives.getIsMail())) {
             wxArchives.setStepStatus("9");
-            wxArchives.setExamineStatus("0");
+//            wxArchives.setExamineStatus("0");
         } else {
             if (StrUtil.isBlank(wxArchives.getCountyCodeMail())) {
                 return AjaxResult.error("收件人区县编码不能为空");
@@ -234,7 +238,9 @@ public class SmartCityController extends SbkBaseController {
             wxArchives.setNopayflagEms(wxBukaBank.getNopayflag());
             if (wxBukaBank.getNopayflag() == 1) {
                 wxArchives.setStepStatus("9");
-                wxArchives.setExamineStatus("0");
+//                wxArchives.setExamineStatus("0");
+            } else {
+//                wxArchives.setExamineStatus("0");
             }
         }
 
@@ -283,7 +289,7 @@ public class SmartCityController extends SbkBaseController {
         }
 
         wxBukaInfo.setStepStatus(999);
-        wxBukaInfo.setExamineStatus(999);
+        wxBukaInfo.setExamineStatus(0);
         // 减免邮寄费
         Integer mailPrice = 20;
         WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxBukaInfo.getShouZoonCode()));
@@ -296,7 +302,6 @@ public class SmartCityController extends SbkBaseController {
         wxBukaInfo.setNopayflagEms(wxBukaBank.getNopayflag());
         if (wxBukaBank.getNopayflag() == 1) {
             wxBukaInfo.setStepStatus(9);
-            wxBukaInfo.setExamineStatus(0);
         }
 
         String code = wxBukaInfo.getCode();
@@ -345,7 +350,7 @@ public class SmartCityController extends SbkBaseController {
         }
 
         wxBukaInfo.setStepStatus(999);
-        wxBukaInfo.setExamineStatus(999);
+        wxBukaInfo.setExamineStatus(0);
         // 减免邮寄费
         Integer mailPrice = 20;
         WxDistrict2 wxDistrict2 = wxDistrict2Service.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxDistrict2>().eq(WxDistrict2::getCode, wxBukaInfo.getShouZoonCode()));
@@ -358,7 +363,6 @@ public class SmartCityController extends SbkBaseController {
         wxBukaInfo.setNopayflagEms(wxBukaBank.getNopayflag());
         if (wxBukaBank.getNopayflag() == 1) {
             wxBukaInfo.setStepStatus(9);
-            wxBukaInfo.setExamineStatus(0);
         }
 
         wxBukaInfo.setSource(null);
@@ -605,18 +609,20 @@ public class SmartCityController extends SbkBaseController {
             // 审核状态：0代表未审核 1代表审核通过 2代表审核未通过
             String examineStatus = wxArchives.getExamineStatus();
             if ("0".equals(examineStatus)) {
-                return AjaxResult.error("采集信息审核中");
+                if ("9".equals(wxArchives.getStepStatus())) {
+                    return AjaxResult.error("采集信息审核中");
+                } else {
+                    if (source.equals(wxArchives.getSource())) {
+                        return new AjaxResult(201, "请继续填写采集信息", wxArchives);
+                    } else {
+                        return AjaxResult.error("请继续在首次申领渠道修改信息");
+                    }
+                }
             } else if ("1".equals(examineStatus)) {
                 return AjaxResult.error("采集信息审核已通过");
             } else if ("2".equals(examineStatus)) {
                 if (source.equals(wxArchives.getSource())) {
                     return new AjaxResult(201, "采集信息审核未通过", wxArchives);
-                } else {
-                    return AjaxResult.error("请继续在首次申领渠道修改信息");
-                }
-            } else if ("999".equals(examineStatus)) {
-                if (source.equals(wxArchives.getSource())) {
-                    return new AjaxResult(201, "请继续填写采集信息", wxArchives);
                 } else {
                     return AjaxResult.error("请继续在首次申领渠道修改信息");
                 }
@@ -643,23 +649,27 @@ public class SmartCityController extends SbkBaseController {
                 break;
         }
 
-        WxBukaInfo wxBukaInfo = wxBukaInfoService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxBukaInfo>().eq(WxBukaInfo::getIdcardno, bhksjhxParam.getSfzh()).in(WxBukaInfo::getExamineStatus, 0, 2, 999));
+        WxBukaInfo wxBukaInfo = wxBukaInfoService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxBukaInfo>().eq(WxBukaInfo::getIdcardno, bhksjhxParam.getSfzh()).in(WxBukaInfo::getExamineStatus, 0, 2));
         if (wxBukaInfo != null) {
             WxBukaInfoImg wxBukaInfoImg = wxBukaInfoImgService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxBukaInfoImg>().eq(WxBukaInfoImg::getOrderno, wxBukaInfo.getOrderno()));
             wxBukaInfo.setWxBukaInfoImg(wxBukaInfoImg);
             // 审核状态：0代表未审核 1代表审核通过 2代表审核未通过
             String examineStatus = String.valueOf(wxBukaInfo.getExamineStatus());
             if ("0".equals(examineStatus)) {
-                return AjaxResult.error("采集信息审核中");
+                if (wxBukaInfo.getStepStatus() == 9) {
+                    return AjaxResult.error("采集信息审核中");
+                } else if (wxBukaInfo.getStepStatus() == 999) {
+                    if (source == wxBukaInfo.getSource()) {
+                        return new AjaxResult(201, "请继续填写采集信息", wxBukaInfo);
+                    } else {
+                        return AjaxResult.error("请继续在首次申领渠道修改信息");
+                    }
+                } else {
+                    return AjaxResult.success("您可以新采集信息");
+                }
             } else if ("2".equals(examineStatus)) {
                 if (source == wxBukaInfo.getSource()) {
                     return new AjaxResult(201, "采集信息审核未通过", wxBukaInfo);
-                } else {
-                    return AjaxResult.error("请继续在首次申领渠道修改信息");
-                }
-            } else if ("999".equals(examineStatus)) {
-                if (source == wxBukaInfo.getSource()) {
-                    return new AjaxResult(201, "请继续填写采集信息", wxBukaInfo);
                 } else {
                     return AjaxResult.error("请继续在首次申领渠道修改信息");
                 }
@@ -710,9 +720,9 @@ public class SmartCityController extends SbkBaseController {
                 return AjaxResult.error("未查到申领数据");
             }
             int examineStatus = Integer.parseInt(wxArchives.getExamineStatus());
-            if (examineStatus == 999) {
-                return AjaxResult.error("请完善采集信息");
-            }
+//            if (examineStatus == 999) {
+//                return AjaxResult.error("请完善采集信息");
+//            }
             result.put("examineStatus", examineStatus); // 审核时间
             result.put("examineTime", wxArchives.getExamineTime()); // 审核时间
             result.put("rejectReason", wxArchives.getReason()); // 驳回原因
@@ -722,9 +732,9 @@ public class SmartCityController extends SbkBaseController {
                 return AjaxResult.error("未查到补换卡数据");
             }
             Integer examineStatus = wxBukaInfo.getExamineStatus();
-            if (examineStatus == 999) {
-                return AjaxResult.error("请完善采集信息");
-            }
+//            if (examineStatus == 999) {
+//                return AjaxResult.error("请完善采集信息");
+//            }
             result.put("examineStatus", examineStatus); // 审核时间
             result.put("examineTime", wxBukaInfo.getExamineTime()); // 审核时间
             result.put("rejectReason", wxBukaInfo.getRejectReason()); // 驳回原因

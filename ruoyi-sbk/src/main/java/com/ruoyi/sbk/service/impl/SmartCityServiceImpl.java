@@ -119,7 +119,7 @@ public class SmartCityServiceImpl implements SmartCityService {
     public JSONObject putOrderinfo(WxBukaInfo wxBukaInfo, Integer mailPrice) {
         AES aes = SecureUtil.aes("3MH0P00OPS3OOROE".getBytes());
         Map<String, Object> hashMap = new HashMap<>();
-        hashMap.put("auth_code", "TWXUCQSOMT48MXWWURVTWGBI5PSSNN76");
+        hashMap.put("auth_code", "0KRMYPWR3JF1BTY88TGCIEVRCSHSM7VF");
         hashMap.put("cust_appid", "wxde85bc4bf1f7629a");
         hashMap.put("cust_order_code", wxBukaInfo.getOrderno());
         hashMap.put("shou_date", DateUtil.format(new Date(), "yyyyMMdd"));
@@ -131,7 +131,7 @@ public class SmartCityServiceImpl implements SmartCityService {
         hashMap.put("shou_phone", wxBukaInfo.getShouPhone());
         hashMap.put("shou_idcardno", wxBukaInfo.getIdcardno());
         hashMap.put("cost_fee", mailPrice * 100);
-        hashMap.put("ordercode", 1); // 1:社保卡申领 2:补换卡
+        hashMap.put("ordercode", 2); // 1:社保卡申领 2:补换卡
         String content = aes.encryptBase64(JSON.toJSONString(hashMap));
         String result = restTemplate.postForObject(url, content, String.class);
         if (StrUtil.isEmpty(result)) {
@@ -147,6 +147,7 @@ public class SmartCityServiceImpl implements SmartCityService {
     public void saveBukaInfoAndImg(WxBukaInfo wxBukaInfo) {
         LambdaQueryWrapper<WxBukaInfo> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(WxBukaInfo::getIdcardno, wxBukaInfo.getIdcardno());
+        queryWrapper.eq(WxBukaInfo::getStepStatus, 9);
         queryWrapper.eq(WxBukaInfo::getExamineStatus, 0);
         Long count = wxBukaInfoMapper.selectCount(queryWrapper);
         if (count > 0) {
