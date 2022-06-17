@@ -576,6 +576,7 @@ public class SmartCityController extends SbkBaseController {
     public AjaxResult xbkzgjy(@RequestBody @Validated XbkzgjyParam xbkzgjyParam) throws IOException {
         List<String> whiteList = new ArrayList<>();
         whiteList.add("130125200002094513"); // 刘元博
+        whiteList.add("130133200001022737"); // 张梦泽
         if (!whiteList.contains(xbkzgjyParam.getSfzh())) {
             // 办卡资格校验
             String keyInfo = xbkzgjyParam.getSfzh() + "|" + xbkzgjyParam.getXm() + "|1";
