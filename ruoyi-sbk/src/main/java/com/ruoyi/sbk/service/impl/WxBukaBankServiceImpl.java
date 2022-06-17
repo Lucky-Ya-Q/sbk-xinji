@@ -43,6 +43,7 @@ public class WxBukaBankServiceImpl extends ServiceImpl<WxBukaBankMapper, WxBukaB
     }
 
     @Override
+    @DataSource(value = DataSourceType.SLAVE)
     public List<WxBukaBank> listAll() {
         return wxBukaBankMapper.selectList(new LambdaQueryWrapper<WxBukaBank>()
                 .eq(WxBukaBank::getFlag, 1)
