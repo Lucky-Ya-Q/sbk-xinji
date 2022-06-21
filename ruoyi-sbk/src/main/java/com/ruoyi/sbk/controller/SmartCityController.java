@@ -31,10 +31,7 @@ import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.result.WxMpUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -568,6 +565,23 @@ public class SmartCityController extends SbkBaseController {
     }
 
     /**
+     * 人员信息查询
+     */
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("人员信息查询")
+    @PostMapping("/ryxxcx")
+    public AjaxResult ryxxcx(@RequestBody @Validated ZkjdcxParam zkjdcxParam) {
+        // 人员信息查询
+        String keyInfo = zkjdcxParam.getSfzh() + "|" + zkjdcxParam.getXm();
+        Result result = sbkService.getResult("0831011", keyInfo);
+        if (!"200".equals(result.getStatusCode())) {
+            return AjaxResult.error(result.getMessage());
+        }
+        Map<String, String> data = (Map<String, String>) result.getData();
+        return AjaxResult.success("操作成功", data.get("ReturnResult"));
+    }
+
+    /**
      * 新办卡资格校验
      */
     @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
@@ -650,8 +664,11 @@ public class SmartCityController extends SbkBaseController {
                 break;
         }
 
-        WxBukaInfo wxBukaInfo = wxBukaInfoService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxBukaInfo>().eq(WxBukaInfo::getIdcardno, bhksjhxParam.getSfzh()).in(WxBukaInfo::getExamineStatus, 0, 2));
+        WxBukaInfo wxBukaInfo = wxBukaInfoService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxBukaInfo>().eq(WxBukaInfo::getIdcardno, bhksjhxParam.getSfzh())
+                .in(WxBukaInfo::getExamineStatus, 0, 2)
+                .orderByDesc(WxBukaInfo::getAddTime));
         if (wxBukaInfo != null) {
+            System.out.println(wxBukaInfo);
             WxBukaInfoImg wxBukaInfoImg = wxBukaInfoImgService.selectOneByLambdaQueryWrapper(new LambdaQueryWrapper<WxBukaInfoImg>().eq(WxBukaInfoImg::getOrderno, wxBukaInfo.getOrderno()));
             wxBukaInfo.setWxBukaInfoImg(wxBukaInfoImg);
             // 审核状态：0代表未审核 1代表审核通过 2代表审核未通过
@@ -694,6 +711,54 @@ public class SmartCityController extends SbkBaseController {
 //        wxArchives.setWxInfomationImg(wxInfomationImg);
 //        return AjaxResult.success(wxArchives);
 //    }
+
+    /**
+     * 邮寄物流信息
+     */
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("补换卡记录列表")
+    @PostMapping("/buhuankaList")
+    public AjaxResult buhuankaList(@RequestBody @Validated BhksjhxParam bhksjhxParam) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+
+        String code = bhksjhxParam.getCode();
+        int source = 0;
+        switch (code) {
+            case "f54791a523474e12b7c183f17c3cbcc2":
+                source = 4;
+                break;
+            case "f1a04d853c2f8212210267ebbda5eadb":
+                source = 1;
+                break;
+        }
+        LambdaQueryWrapper<WxBukaInfo> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(WxBukaInfo::getIdcardno, bhksjhxParam.getSfzh());
+        queryWrapper.eq(WxBukaInfo::getSource, source);
+        List<WxBukaInfo> wxBukaInfoList = wxBukaInfoService.selectListByLambdaQueryWrapper(queryWrapper);
+        for (WxBukaInfo wxBukaInfo : wxBukaInfoList) {
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("id", wxBukaInfo.getId());
+            map.put("newName", wxBukaInfo.getNewName());
+            map.put("idcardno", wxBukaInfo.getIdcardno());
+            map.put("addTime", wxBukaInfo.getAddTime());
+            map.put("orderno", wxBukaInfo.getOrderno());
+            if (wxBukaInfo.getStepStatus() == 999) {
+                map.put("state", "未完成");
+            }
+            if (wxBukaInfo.getStepStatus() == 9) {
+                if (wxBukaInfo.getExamineStatus() == 0) {
+                    map.put("state", "审核中");
+                } else if (wxBukaInfo.getExamineStatus() == 1) {
+                    map.put("state", "审核通过");
+                } else if (wxBukaInfo.getExamineStatus() == 2) {
+                    map.put("state", "审核驳回");
+                }
+            }
+            mapList.add(map);
+        }
+
+        return AjaxResult.success(mapList);
+    }
 
     /**
      * 邮寄物流信息
@@ -959,5 +1024,27 @@ public class SmartCityController extends SbkBaseController {
     @PostMapping("/wxMingzu")
     public AjaxResult wxMingzu(@RequestBody @Validated CodeParam codeParam) {
         return AjaxResult.success(wxMingzuService.listAll());
+    }
+
+    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
+    @ApiOperation("制卡进度查询")
+    @PostMapping("/zkjdcx")
+    public AjaxResult zkjdcx(@RequestBody @Validated ZkjdcxParam zkjdcxParam) throws IOException {
+        Map<String, Object> resultMap = new HashMap<>();
+        // 申领信息查询
+        Result result = sbkService.getResult("0811012", zkjdcxParam.getSfzh() + "|" + zkjdcxParam.getXm());
+        if (!"200".equals(result.getStatusCode())) {
+            resultMap.put("shenling", smartCityService.getShenLingData(zkjdcxParam, "100"));
+            resultMap.put("buhuanka", new ArrayList<>());
+        } else {
+            Map<String, String> data = (Map<String, String>) result.getData();
+            String slxxcx = ParamUtils.decrypted(SbkParamUtils.PRIVATEKEY, data.get("ReturnResult"));
+            String[] slxxcxArr = slxxcx.split("\\|");
+
+            resultMap.put("shenling", smartCityService.getShenLingData(zkjdcxParam, slxxcxArr[12]));
+            resultMap.put("buhuanka", smartCityService.getBuHuanKaData(zkjdcxParam, slxxcxArr[12]));
+        }
+
+        return AjaxResult.success(resultMap);
     }
 }
