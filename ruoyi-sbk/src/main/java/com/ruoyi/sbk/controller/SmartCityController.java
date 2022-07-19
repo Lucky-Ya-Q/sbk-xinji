@@ -894,20 +894,6 @@ public class SmartCityController extends SbkBaseController {
     }
 
     /**
-     * 注销
-     */
-//    @Log(title = "电子社保卡", businessType = BusinessType.OTHER)
-//    @ApiOperation("注销")
-//    @PostMapping("/zx")
-//    public AjaxResult zx(@RequestBody @Validated EncryptParam encryptParam) {
-//        SbkUser sbkUser = JSON.parseObject(AESUtils.decrypt(encryptParam.getBody(), AESUtils.KEY), SbkUser.class);
-//        // 注销
-//        String keyInfo = sbkUser.getAac002() + "|" + sbkUser.getAac003() + "|" + sbkUser.getAaz500();
-//        Result result = sbkService.getResult("0821018", keyInfo);
-//        return toAjax(result);
-//    }
-
-    /**
      * 正式挂失
      */
     @Log(title = "电子社保卡", businessType = BusinessType.ZSGS)
